@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+# Check funds in my generic budget envelopes.
+source "$(dirname "$0")/common.sh"
+
+required_var POCKET_ACCOUNTS
+
+hledger bal -E "${POCKET_ACCOUNTS[@]}"

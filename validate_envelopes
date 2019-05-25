@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+# Wrapper for validate_envelopes.py that marshals bash config options to Python
+# parameters, since we can't pass arrays as environment variables.
+DIR=$(dirname "$0")
+source "$DIR/common.sh"
+
+required_var CASH_ACCOUNTS
+required_var BUDGET_ACCOUNTS
+
+python3.7 "$DIR/validate_envelopes.py" \
+    --cash-accounts "${CASH_ACCOUNTS[@]}" \
+    --budget-accounts "${BUDGET_ACCOUNTS[@]}"

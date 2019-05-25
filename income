@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# The incomestatement command shows Revenues vs Expenses to calculate cash net 
+# worth (excluding liabilities).
+hledger is -M --tree "$@"

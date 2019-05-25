@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+# Make sure all journals have properly ordered transactions. This exists because
+# hledger checks transaction dates globally, so it fails on my ledgers which are
+# split into separate files by account.
+source common.sh
+
+if ! apply hledger check-dates -f | grep ERROR -A 6; then
+  if [[ "${PIPESTATUS[0]}" -ne 0 ]]; then
+    fatal "Checking dates failed."
+  fi
+  echo "No out-of-order transactions."
+  exit 0
+fi
+
+fatal "Out-of-order transactions found!"

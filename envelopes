@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+# Display balances of my envelope budgeting accounts.
+source "$(dirname "$0")/common.sh"
+
+required_var BUDGET_ACCOUNTS
+
+hledger bal \
+        --cleared --pending \
+        --row-total \
+        --empty \
+        --no-elide \
+        --pretty-tables \
+        --tree \
+        "$@" \
+        "${BUDGET_ACCOUNTS[@]}"

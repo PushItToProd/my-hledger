@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# Display loan balances over time.
+
+./loan_balances --monthly --cumulative
