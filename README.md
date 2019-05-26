@@ -86,7 +86,53 @@ following environment variables:
 * `JOURNALS_DIR`: By default, this is `$LEDGER_DIR/journals`.
 * `CONFIG_FILE`: By default, this is `$LEDGER_DIR/helpers_config.sh`.
 
-** Configuration variables
+## Configuration variables
+
+These can be provided in helpers_config.sh or as environment variables. However,
+the values are always treated and quoted as arrays, so any values containing
+spaces will need to be provided as array entries.
+
+* `REGULAR_ASSET_ACCOUNTS` - Asset accounts to show in the **balances** command.
+* `REGULAR_LIABILITY_ACCOUNTS` - Liability accounts to show in the **balances**
+  command.
+* `EXPENSE_ACCOUNTS` - Accounts to show in the **expenses** command.
+* `LOAN_ACCOUNTS` - Accounts to show in the **loan_balances** and
+  **loan_progress** commands.
+* `POCKET_ACCOUNTS` - Accounts to show in the **pockets** command.
+* `CASH_ACCOUNTS` - Real accounts to check against `BUDGET_ACCOUNTS` in the
+  **validate_envelopes** command.
+* `BUDGET_ACCOUNTS` - Virtual accounts to display in the **envelopes** command
+  and to validate in the **validate_envelopes** command.
+* `BANKING_BROWSER` - Invocation of the web browser to use in **launch**. Must
+  be an array if any flags are provided.
+  - e.g. `BANKING_BROWSER=("chromium-browser" "--new-window")`
+* `BANKING_SITES` - Array of websites to open when **launch** is run.
+* `LEDGER_EDITOR` - The editor to open journals in when **launch** is run. Must
+  be an array if any flags are provided.
+
+### Sample configuration
+
+```bash
+# ~/ledger/helpers_config.sh
+if [[ "${#BASH_SOURCE[@]}" -eq 1 ]]; then
+    echo "This is a config file and shouldn't be run directly!" >&2
+    exit 1
+fi
+
+REGULAR_ASSET_ACCOUNTS=assets
+REGULAR_LIABILITY_ACCOUNTS=liabilities
+EXPENSE_ACCOUNTS=(expenses liabilities:loans)
+LOAN_ACCOUNTS=liabilities:loans
+POCKET_ACCOUNTS=budget:buffer
+CASH_ACCOUNTS=(assets liabilities:credit)
+BUDGET_ACCOUNTS=budget
+BANKING_BROWSER=("chromium-browser" "--new-window")
+BANKING_SITES=(
+  'https://not-a-real.bank'
+  'https://another.fake-bank.com'
+)
+LEDGER_EDITOR=emacs
+```
 
 ## License
 
