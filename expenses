@@ -12,5 +12,4 @@ hledger bal "${EXPENSE_ACCOUNTS[@]}" \
         --monthly \
         --tree \
         --no-elide \
-        --pretty-tables \
         "$@"
