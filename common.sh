@@ -30,7 +30,7 @@ fatal() {
 }
 
 is_set() {
-    [[ "${!1:+is_set}" == "is_set" ]]
+    declare -p "$1" >/dev/null 2>/dev/null
 }
 
 required_var() {
