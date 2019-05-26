@@ -39,11 +39,17 @@ budgeting system, based mostly on [YNAB](
 
 ## The Scripts
 
-* **are_my_bills_paid** - Checks if transactions matching queries in a 
+Each script has a prefix of `hledger-`, which allows it to be picked up as an
+hledger subcommand if it's on the path.
+
+* **balances** - Displays main asset and liability account balances with a few
+  small variations by account type. My bank reflects all pending transactions
+  immediately on my checking and savings account balances, but only cleared
+  transactions are reflected on credit accounts, so the flags on each category
+  are configured to reflect this, allowing me to validate my ledger balances
+  against those displayed by my bank.
+* **bills** - Checks if transactions matching queries in a 
   config file have been made in the current month.
-* **check_dates** - hledger's check-dates chokes if you have multiple 
-  files, so this iterates over all journal files and checks them 
-  individually.
 * **envelopes** - Displays balances of envelope budget accounts.
 * **expenses** - Summarizes monthly expenditures by expense account.
 * **income** - Shows net revenues and expenses by income and expense
@@ -54,6 +60,9 @@ budgeting system, based mostly on [YNAB](
 * **loan_progress** - Shows loan balances by month.
 * **pockets** - Shows funds in envelopes not marked for specific
   expenses.
+* **validate_dates** - hledger's check-dates chokes if you have multiple 
+  files, so this iterates over all journal files and checks them 
+  individually.
 * **validate_envelopes** - Checks whether cash balance and budget balance are equal.
 
 Some of the above files have required variables that must be set
