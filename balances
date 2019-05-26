@@ -4,7 +4,6 @@
 source "$(dirname "$0")/common.sh"
 
 required_var REGULAR_ASSET_ACCOUNTS
-required_var REGULAR_LIABILITY_ACCOUNTS
 
 b() {
     hledger bal --flat "$@"
@@ -15,5 +14,7 @@ b -ERCP "$@" "${REGULAR_ASSET_ACCOUNTS[@]}"
 
 echo
 
-echo ==== Liabilities ====
-b -EC "$@" "${REGULAR_LIABILITY_ACCOUNTS[@]}"
+if is_set REGULAR_LIABILITY_ACCOUNTS; then
+    echo ==== Liabilities ====
+    b -EC "$@" "${REGULAR_LIABILITY_ACCOUNTS[@]}"
+fi
