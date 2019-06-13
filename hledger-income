@@ -1,4 +1,8 @@
 #!/usr/bin/env bash
-# The incomestatement command shows Revenues vs Expenses to calculate cash net 
+# The incomestatement command shows Revenues vs Expenses to calculate cash net
 # worth (excluding liabilities).
-hledger is -M --tree "$@"
+
+FROM="$(date -d "1 year ago" +"%Y-%m")"
+TO="$(date -d "next month" +"%Y-%m")"
+
+hledger is -M --tree -b "$FROM" -e "$TO" "$@"
