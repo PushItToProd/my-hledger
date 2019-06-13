@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+# Display my main reports all in one place.
+
+col1() {
+  echo "Envelopes:"
+  hledger envelopes
+}
+
+col2() {
+  echo "Account Balances:"
+  hledger balances
+  echo
+  echo
+  echo "Bills:"
+  hledger bills
+}
+
+paste <(col1) <(col2) \
+  | column -s $'\t' -t
