@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+# True hledger account balances, irrespective of transaction state.
+source "$(dirname "$0")/common.sh"
+
+required_var REGULAR_ASSET_ACCOUNTS
+
+hledger bal -ERUCP --flat "${REGULAR_ASSET_ACCOUNTS[@]}" "${REGULAR_LIABILITY_ACCOUNTS[@]}"
