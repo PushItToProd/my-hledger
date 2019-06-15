@@ -4,7 +4,7 @@
 # split into separate files by account.
 source "$(dirname "$0")/common.sh"
 
-if ! apply hledger check-dates -f | grep ERROR -A 6; then
+if ! apply hledger check-dates --ignore-assertions -f | grep ERROR -A 6; then
   if [[ "${PIPESTATUS[0]}" -ne 0 ]]; then
     fatal "Checking dates failed."
   fi
