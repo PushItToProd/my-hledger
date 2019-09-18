@@ -13,4 +13,5 @@ hledger bal "${EXPENSE_ACCOUNTS[@]}" \
         --tree \
         --no-elide \
         -b "$FROM" -e "$TO" \
+        --average \
         "$@"
