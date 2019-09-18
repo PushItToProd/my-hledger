@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# Alias for hledger-balances so I can abbreviate it instead of having
+# to type all of "balances".
+
+"$(dirname "$0")/hledger-balances" "$@"
