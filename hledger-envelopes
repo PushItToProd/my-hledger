@@ -5,6 +5,7 @@ source "$(dirname "$0")/common.sh"
 required_var BUDGET_ACCOUNTS
 
 hledger bal \
+        --auto \
         --cleared --pending \
         --row-total \
         --empty \
