@@ -7,7 +7,13 @@ required_var BANKING_BROWSER
 required_var LEDGER_EDITOR
 
 launch_browser() {
-    "${BANKING_BROWSER[@]}" "${BANKING_SITES[@]}"
+    if declare -f _launch_browser > /dev/null; then
+        _launch_browser
+    fi
+
+    for site in "${BANKING_SITES[@]}"; do
+        xdg-open "$site"
+    done
 }
 
 launch_editor() {
