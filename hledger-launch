@@ -7,12 +7,15 @@ required_var BANKING_BROWSER
 required_var LEDGER_EDITOR
 
 launch_browser() {
-    if declare -f _launch_browser > /dev/null; then
-        _launch_browser
-    fi
+    #if declare -f _launch_browser > /dev/null; then
+    #    _launch_browser
+    #fi
+    i3-firefox "$1"
+    shift
+    sleep 0.25
 
-    for site in "${BANKING_SITES[@]}"; do
-        xdg-open "$site"
+    for site in "$@"; do
+        i3-firefox "$site"
     done
 }
 
