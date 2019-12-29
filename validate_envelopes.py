@@ -24,7 +24,7 @@ def get_parser():
 
 def hledger_decimal(n):
     """
-    Convert an hledger dollar amount to a Decimal. TRANSLATION_TABLE is used to
+    Convert an hledger dollar amount to a Decimal. NON_NUMERIC_CHARS is used to
     preprocess the hledger string value by removing non-numeric characters.
     """
     stripped = re.sub(NON_NUMERIC_CHARS, '', n)
