@@ -1,5 +1,15 @@
 #!/usr/bin/env bash
-# Alias for hledger-balances so I can abbreviate it instead of having
-# to type all of "balances".
+# Display balances of my accounts in the order that I check them,
+# specified in the config.
+source "$(dirname "$0")/common.sh"
 
-"$(dirname "$0")/hledger-balances" "$@"
+required_var ACCOUNTS_IN_ORDER
+
+b() {
+    hledger bal --empty --no-total "$@"
+}
+
+for account in "${ACCOUNTS_IN_ORDER[@]}"; do
+  b "$account"
+done
+
