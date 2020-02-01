@@ -39,6 +39,12 @@ required_var() {
     fi
 }
 
+required_func() {
+  if ! declare -F "$1" >/dev/null 2>/dev/null; then
+    fatal "The function $1 is required, but is not declared."
+  fi
+}
+
 # Helper method meant to be called at the top level of a script. Returns true if
 # the script is the root script that was invoked at the command line.
 is_main() {
