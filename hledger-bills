@@ -77,5 +77,6 @@ if __name__ == "__main__":
     args = get_parser().parse_args()
     bill_file = get_bill_file_path()
     bills = load_bills(bill_file)
+    print(f"Bills for period {args.period}")
     for bill_name, query in bills.items():
         txns_match(bill_name, args.period, query)
