@@ -51,7 +51,7 @@ is_main() {
     [[ "${BASH_SOURCE[1]}" == "$0" ]]
 }
 
-if [[ "${#BASH_SOURCE[@]}" -eq 1 ]]; then
+if is_main; then
     case "${1:-}" in
         list_journals)
             shift
