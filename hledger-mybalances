@@ -16,7 +16,7 @@ b() {
 # in their displayed total, but not unmarked ones (which denote
 # transactions not yet received by the bank).
 cash() {
-  b --real --cleared --pending "$@"
+  b --cleared --pending "$@"
 }
 
 # Credit accounts don't reflect pending postings, only cleared ones.
