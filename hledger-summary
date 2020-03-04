@@ -6,4 +6,4 @@ FROM="$(date -d "1 year ago" +"%Y-%m")"
 TO="$(date -d "this month" +"%Y-%m")"
 
 
-hledger is -M --tree -b "$FROM" -e "$TO" -A -T "$@"
+hledger is --monthly --tree --begin="$FROM" --end="$TO" --average --row-total "$@"
