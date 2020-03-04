@@ -5,4 +5,5 @@
 FROM="$(date -d "1 year ago" +"%Y-%m")"
 TO="$(date -d "this month" +"%Y-%m")"
 
-hledger is -M --tree -b "$FROM" -e "$TO" -A "$@"
+
+hledger is -M --tree -b "$FROM" -e "$TO" -A -T "$@"
