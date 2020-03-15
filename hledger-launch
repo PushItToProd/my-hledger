@@ -26,9 +26,8 @@ launch_editor() {
 main() {
     if [[ "$#" -eq 0 ]]; then
         launch_browser "${BANKING_SITES[@]}"
-        terminator -p bigtext --new-tab
+        terminator --new-tab
         launch_editor
-        terminator -p default --new-tab
         return
     fi
     case "$1" in
