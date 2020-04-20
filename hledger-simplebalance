@@ -1,5 +1,0 @@
-#!/usr/bin/env bash
-
-source "$(dirname "$0")/common.sh"
-
-hledger balance "${REGULAR_ASSET_ACCOUNTS[@]}" "${REGULAR_LIABILITY_ACCOUNTS[@]}"
