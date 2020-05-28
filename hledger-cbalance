@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# Display cleared balance for credit cards.
+
+hledger balance -EC "$@"

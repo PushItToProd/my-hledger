@@ -1,0 +1,61 @@
+#!/usr/bin/env bash
+
+set -o nounset
+set -o errexit
+shopt -s nocasematch
+
+: "${DEFAULT_ACCOUNT:=Liabilities:Credit:Citi:Costco}"
+read -p "Account [$DEFAULT_ACCOUNT]: " -e ACCOUNT
+if [[ "$ACCOUNT" == "" ]]; then
+  ACCOUNT="$DEFAULT_ACCOUNT"
+fi
+
+TODAY="$(date +%F)"
+read -p "Date [$TODAY]: " -e DATE
+if [[ "$DATE" == "" ]]; then
+  DATE="$TODAY"
+fi
+
+STATUS=
+while [[ "$STATUS" == "" ]]; do
+    read -p 'Cleared (y/N)? ' -e STATUS
+    case "$STATUS" in
+      y*|\*)
+        STATUS='*'
+        ;;
+      n*|\!|"")
+        STATUS='!'
+        ;;
+      *) echo "Invalid status. Enter *, !, y, or n."
+         ;;
+    esac
+done
+
+read -p 'Description [Fred Meyer]: ' -e DESC
+if [[ "$DESC" == "" ]]; then
+  DESC="Fred Meyer"
+fi
+
+: "${TOTAL:=}"
+while [[ "$TOTAL" == "" ]]; do
+  read -p 'Total: ' -e TOTAL
+done
+
+read -p 'Caffeine: ' -e CAFFEINE
+if [[ "$CAFFEINE" == "" ]]; then
+  CAFFEINE=0
+fi
+
+CAFFEINE="$(echo "$CAFFEINE" | bc)"
+
+FOOD="$(echo "$TOTAL - $CAFFEINE" | bc)"
+
+cat <<EOF
+
+${DATE}${STATUS:+ ${STATUS}} ${DESC}
+    Liabilities:Credit:Citi:Costco  \$-${TOTAL}
+    (Budget:Core:Food:Caffeine)     \$-${CAFFEINE}
+    Expenses:Core:Food:Caffeine      \$${CAFFEINE}
+    (Budget:Core:Food:Groceries)    \$-${FOOD}
+    Expenses:Core:Food:Groceries     \$${FOOD}
+EOF

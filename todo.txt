@@ -1,0 +1,23 @@
+hledger-enter
+-------------
+
+- add support for relative dates - e.g. date=-1
+- add support for partial dates - e.g. date=14 or date=05-14
+- consistently output info on stderr. stdout should only include the resulting
+  transactions
+- create internal globals txn_date and txn_status corresponding to environment
+  vars DATE and STATUS
+- validate that allcaps globals are set in all functions that require them
+
+- make it unneccessary for transaction templates to call insert_txn
+  unfortunately, something like this doesn't work:
+      source "$template" | save_txn
+  (per experiment `can_pipe_see_sourced_var`)
+
+print_basic_txn
+- check all required globals
+
+save_txn
+- check all required globals
+- validate that journal_path exists before saving
+- allow saving to a custom file

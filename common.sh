@@ -4,6 +4,7 @@ set -euo pipefail
 : "${LEDGER_DIR:="$(dirname "$LEDGER_FILE")"}"
 : "${JOURNALS_DIR:="$LEDGER_DIR/journals"}"
 : "${CONFIG_FILE:="$LEDGER_DIR/helpers_config.sh"}"
+: "${PROGNAME:="$(basename "$0")"}"
 
 if [[ -e "$CONFIG_FILE" ]]; then
     source "$CONFIG_FILE"
@@ -24,8 +25,16 @@ apply() {
     done
 }
 
+info() {
+    echo "$(tput setaf 4)info: $*$(tput sgr0)" >&2
+}
+
+error() {
+    echo "$(tput setaf 1)ERROR: $*$(tput sgr0)" >&2
+}
+
 fatal() {
-    echo "$(tput setaf 1)ERROR: $@$(tput sgr0)" >&2
+    error "$*"
     exit 1
 }
 

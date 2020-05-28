@@ -1,0 +1,287 @@
+#!/usr/bin/env bash
+# A utility for quickly entering hledger transactions.
+
+source "$(dirname "$0")/common.sh"
+
+# length of ledger lines
+readonly line_len=48
+readonly line_indent='    '
+readonly template_dir="$LEDGER_DIR/templates"
+readonly template_suffix=.tmpl
+readonly config_path="$template_dir/config.sh"
+
+# both date and status can be set using environment variables if desired
+: "${DATE:=$(date +%F)}"
+: "${STATUS=!}"
+
+# Given an account name and amount, print an appropriately indented and spaced
+# transaction line. e.g. `print_line Assets:Checking '$10'` produces the
+# following:
+#     Assets:Checking                              $10
+#
+# If no amount is provided, then just an indented account name will be returned.
+# i.e. `print_line Assets:Checking` will produce:
+#     Assets:Checking
+#
+# Args:
+#   $1: account name
+#   $2: amount (optional)
+print_line() {
+  local -r account="$1"
+  if [[ "$#" -lt 2 ]]; then
+    echo "$line_indent$account"
+    return
+  fi
+  local -r amount="$2"
+  # journal lines are generally 48 characters long, after indentation, but we
+  # also need at least two spaces separating the account name and amount, so we
+  # compute the width needed for printf
+  local -r amount_len="${#amount}"
+  local -r account_width=$(( line_len - amount_len - 2 ))
+  printf '%s%-*s  %s\n' "$line_indent" "$account_width" "$account" "$amount"
+}
+
+# Output a basic budgeted expense transaction. Arguments are provided as
+# global variables.
+# Required globals:
+#   $txn_description
+#   $txn_account
+#   $txn_amount
+#   $txn_category
+#   $DATE
+#   $STATUS
+# Optional globals:
+#   $txn_comment
+print_basic_txn() {
+  : "${txn_description:?}"
+  : "${txn_account:?}"
+  : "${txn_amount:?}"
+  : "${txn_category:?}"
+
+  echo # insert a blank line after the last transaction
+
+  echo "${DATE} ${STATUS} ${txn_description}"
+
+  if [[ "${txn_comment:-}" ]]; then
+    echo "    ; $txn_comment"
+  fi
+
+  print_line "$txn_account" "$txn_amount"
+  print_line "(Budget:${txn_category})" "${txn_amount}"
+  print_line "Expenses:${txn_category}"
+}
+
+# Take a transaction on stdin, print it on stdout, and save it to the journal
+# file, unless NO_RECORD_TXN is set, in which case just print it to stdout.
+# Globals:
+#   JOURNALS_DIR: The path to the directory where journals are saved.
+#   journal_name: The name of the journal file to save to, i.e. a path relative
+#     to the journals directory *without* the .journal extension, which will be
+#     appended.
+save_txn() {
+  : "${journal_name:?journal_name must be set when calling save_txn}"
+  local journal_path="$JOURNALS_DIR/${journal_name}.journal"
+
+  if [[ "${NO_RECORD_TXN:-}" ]]; then
+    cat  # just display the transaction on stdout
+    echo
+    echo "Transaction not logged because :test or NO_RECORD_TXN is set." >&2
+    echo "Would have logged it to $journal_path" >&2
+    return
+  fi
+
+  # tee the output so we can see it
+  tee --append "$journal_path"
+  echo "Transaction logged to $journal_path" >&2
+}
+
+# Actually insert a transaction as defined. This should be invoked by
+# transaction templates.
+# Globals:
+#   See print_basic_txn and save_txn.
+insert_txn() {
+  print_basic_txn | save_txn
+}
+
+# Convert a full template path to just the template's raw name.
+template_name() {
+  local name
+  name="$(basename "$1")"
+  echo "${name%%$template_suffix}"
+}
+
+# Process a single template name or partial name. The name is expanded using
+# globbing to search the template path for matching files. Then, if one and only
+# one template has been found, it gets sourced.
+load_template() {
+  local -r name="$1"
+  local -a matches=()
+  local template template_name t
+
+  # find matching templates using globbing
+  for t in "$template_dir/$name"*"$template_suffix"; do
+    matches+=("$t")
+    template="$t"
+  done
+
+  # ensure we got exactly one response
+  if (( "${#matches[@]}" == 0 )); then
+    fatal "No matches for template name $name"
+  fi
+  if (( "${#matches[@]}" > 1 )); then
+    error "Multiple matches for template name $name:"
+    # list the friendly names of the multiple matching templates
+    for match in "${matches[@]}"; do
+      error "  $(template_name "$match")"
+    done
+    fatal "Please be more specific"
+  fi
+
+  template_name="$(template_name "$template")"
+  if [[ "$template_name" != "$name" ]]; then
+    info "Expanding $name to $template_name"
+  fi
+
+  source "$template"
+}
+
+# Display a list of templates in the template directory.
+# Args: none
+# Globals:
+#   $template_dir: The location of the templates files.
+#   $template_suffix: The extension that identifies template files.
+list_templates() {
+  local tmpl name
+  for tmpl in "$template_dir"/*"$template_suffix"; do
+    name="$(basename "$tmpl")"
+    name="${name%%.tmpl}"
+    echo "$name"
+  done
+}
+
+# Print a help message describing program usage.
+# Globals:
+#   PROGNAME: The name of this executable.
+show_help() {
+  cat <<EOF
+${PROGNAME}: A utility for entering hledger transactions.
+
+Usage:
+  ${PROGNAME} [:test] [date=DATE] [status=STATUS | :cleared] TEMPLATES...
+  ${PROGNAME} :list
+  ${PROGNAME} :help
+
+Templates are defined in the templates directory in the same directory as your
+ledger file.
+
+Transaction arguments:
+  date=DATE       Set the transactions' dates.
+  status=STATUS   Set the transactions' statuses.
+  :c :cleared     Set the transactions' status to cleared.
+
+General flags:
+  :test   Display the transaction that would be logged without saving it.
+  :list   List available templates.
+  :help   Display this help message.
+EOF
+}
+
+# Given a list of template names, load each of the given templates.
+# Args: a list of template names.
+# Globals:
+#   config_path: The path to the config file.
+process_templates() {
+  # load config so the templates can work
+  if [[ -r "$config_path" ]]; then
+    source "$config_path"
+  fi
+
+  for template; do
+    load_template "$template"
+  done
+}
+
+main() {
+  # list of templates to process
+  local -a templates=()
+  # action determines what we actually do - entering transactions, displaying
+  # help, or listing templates
+  local action=unset
+
+  # variables for command line flags
+  local txn_date=
+  local txn_status=
+
+  # first parse the arguments without doing anything
+  local arg
+  for arg; do
+    case "$arg" in
+      # special cases - list and help break out immediately since their actions
+      # ignore all other given arguments
+      :list|list|l)
+        action=list
+        break
+        ;;
+      :help|help|h|'?')
+        action=help
+        break
+        ;;
+      # args for normal transaction entry behavior
+      :test)
+        NO_RECORD_TXN=1
+        ;;
+      date=*)
+        if [[ "$txn_date" ]];  then
+          fatal "Date cannot be provided more than once. It's already set" \
+                "to $txn_date"
+        fi
+        txn_date="${arg#*=}"
+        ;;
+      :c|:cleared)
+        arg="status=*"
+        ;&
+      status=*)
+        if [[ "$txn_status" ]];  then
+          fatal "Status cannot be provided more than once. It's already set" \
+                "to $txn_status"
+        fi
+        txn_status="${arg#*=}"
+        ;;
+      *)
+        action=enter
+        templates+=("$arg")
+        ;;
+    esac
+  done
+
+  # set global vars if command line flags are given
+  if [[ "$txn_date" ]]; then
+    DATE="$txn_date"
+  fi
+  if [[ "$txn_status" ]]; then
+    STATUS="$txn_status"
+  fi
+
+  # now process the parsed arguments
+  case "$action" in
+    unset)
+      echo "error: No transaction templates provided" >&2
+      echo "Use :help if you need help" >&2
+      echo "Available templates:" >&2
+      list_templates >&2
+      exit 1
+      ;;
+    list) list_templates ;;
+    help) show_help ;;
+    enter) process_templates "${templates[@]}" ;;
+    *)
+      echo "internal error: invalid action $action"
+      exit 1
+      ;;
+  esac
+
+}
+
+if is_main; then
+  main "$@"
+fi
