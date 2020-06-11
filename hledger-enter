@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# A utility for quickly entering hledger transactions.
+# A utility for quickly entering hledger transactions based on templates with
+# optional inputs.
 
 source "$(dirname "$0")/common.sh"
 
