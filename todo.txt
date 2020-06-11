@@ -1,3 +1,9 @@
+README
+------
+
+- describe the difference between hledger-expenses, hledger-income, and
+  hledger-summary
+
 hledger-enter
 -------------
 
