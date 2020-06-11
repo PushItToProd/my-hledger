@@ -1,3 +1,5 @@
+- switch to two space indents
+
 README
 ------
 
