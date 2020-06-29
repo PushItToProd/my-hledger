@@ -2,6 +2,8 @@
 # Make sure all journals have properly ordered transactions. This exists because
 # hledger checks transaction dates globally, so it fails on my ledgers which are
 # split into separate files by account.
+
+# shellcheck source=common.sh
 source "$(dirname "$0")/common.sh"
 
 if ! apply hledger check-dates --ignore-assertions -f | grep ERROR -A 6; then

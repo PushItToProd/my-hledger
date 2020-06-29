@@ -69,6 +69,8 @@ is_main() {
 if ! file_exists "$CONFIG_FILE"; then
     fatal "The config file $CONFIG_FILE does not exist." >&2
 fi
+
+# shellcheck source=/home/joe/Documents/ledger/helpers_config.sh
 source "$CONFIG_FILE"
 
 # Find all .journal files in the journals/ directory adjacent to the ledger

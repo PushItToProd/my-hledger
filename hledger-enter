@@ -2,6 +2,7 @@
 # A utility for quickly entering hledger transactions based on templates with
 # optional inputs.
 
+# shellcheck source=common.sh
 source "$(dirname "$0")/common.sh"
 
 # length of ledger lines

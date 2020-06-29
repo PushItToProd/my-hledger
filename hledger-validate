@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 set -euo pipefail
-source "$(dirname "$0")/common.sh"
 
 hledger validate-dates
 hledger validate-envelopes

@@ -11,4 +11,4 @@ for f in *; do
   fi
 done
 
-shellcheck "${shell_scripts[@]}"
+shellcheck -x "${shell_scripts[@]}"
