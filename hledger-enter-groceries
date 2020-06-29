@@ -18,17 +18,17 @@ fi
 
 STATUS=
 while [[ "$STATUS" == "" ]]; do
-    read -p 'Cleared (y/N)? ' -e STATUS
-    case "$STATUS" in
-      y*|\*)
-        STATUS='*'
+  read -p 'Cleared (y/N)? ' -e STATUS
+  case "$STATUS" in
+    y*|\*)
+      STATUS='*'
+      ;;
+    n*|\!|"")
+      STATUS='!'
+      ;;
+    *) echo "Invalid status. Enter *, !, y, or n."
         ;;
-      n*|\!|"")
-        STATUS='!'
-        ;;
-      *) echo "Invalid status. Enter *, !, y, or n."
-         ;;
-    esac
+  esac
 done
 
 read -p 'Description [Fred Meyer]: ' -e DESC
