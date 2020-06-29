@@ -65,14 +65,6 @@ is_main() {
     [[ "${BASH_SOURCE[1]}" == "$0" ]]
 }
 
-### Load the configuration.
-if ! file_exists "$CONFIG_FILE"; then
-    fatal "The config file $CONFIG_FILE does not exist." >&2
-fi
-
-# shellcheck source=/home/joe/Documents/ledger/helpers_config.sh
-source "$CONFIG_FILE"
-
 # Find all .journal files in the journals/ directory adjacent to the ledger
 # file.
 list_journals() {
@@ -89,6 +81,20 @@ apply() {
         "$@" "$j"
     done
 }
+
+### Pre-run validation
+
+if ! file_exists "$LEDGER_FILE"; then
+  fatal "The LEDGER_FILE $LEDGER_FILE does not exist"
+fi
+
+if ! file_exists "$CONFIG_FILE"; then
+    fatal "The config file $CONFIG_FILE does not exist." >&2
+fi
+
+### Load the configuration.
+# shellcheck source=/home/joe/Documents/ledger/helpers_config.sh
+source "$CONFIG_FILE"
 
 # If this script gets run directly, expose `list_journals` and `apply` for
 # testing.
