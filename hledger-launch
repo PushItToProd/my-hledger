@@ -7,38 +7,38 @@ required_var BANKING_BROWSER
 required_var LEDGER_EDITOR
 
 launch_browser() {
-    i3-firefox "$1"
-    shift
-    sleep 0.25
+  i3-firefox "$1"
+  shift
+  sleep 0.25
 
-    for site in "$@"; do
-        i3-firefox "$site"
-    done
+  for site in "$@"; do
+    i3-firefox "$site"
+  done
 }
 
 launch_editor() {
-    "${LEDGER_EDITOR[@]}" $(list_journals)
+  "${LEDGER_EDITOR[@]}" $(list_journals)
 }
 
 main() {
-    if is_func pre_launch; then
-      pre_launch
-    fi
-    if [[ "$#" -eq 0 ]]; then
-        launch_browser "${BANKING_SITES[@]}"
-        launch_editor
-        return
-    fi
-    case "$1" in
-        browser|chrome)
-            launch_browser "${BANKING_SITES[@]}"
-            ;;
-        emacs|editor)
-            launch_editor
-            ;;
-        *)
-            fatal "unrecognized command: $1"
-            ;;
-    esac
+  if is_func pre_launch; then
+    pre_launch
+  fi
+  if [[ "$#" -eq 0 ]]; then
+    launch_browser "${BANKING_SITES[@]}"
+    launch_editor
+    return
+  fi
+  case "$1" in
+    browser|chrome)
+      launch_browser "${BANKING_SITES[@]}"
+      ;;
+    emacs|editor)
+      launch_editor
+      ;;
+    *)
+      fatal "unrecognized command: $1"
+      ;;
+  esac
 }
 is_main && main "$@"
