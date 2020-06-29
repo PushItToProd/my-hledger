@@ -19,6 +19,7 @@ launch_browser() {
 }
 
 launch_editor() {
+  # shellcheck disable=SC2046
   "${LEDGER_EDITOR[@]}" $(list_journals)
 }
 
