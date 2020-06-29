@@ -21,9 +21,8 @@ launch_editor() {
 }
 
 main() {
-    # TODO: move this into some config
-    if [[ -x ~/.config/i3/scripts/i3-rename ]]; then
-      ~/.config/i3/scripts/i3-rename --nameif hledger
+    if is_func pre_launch; then
+      pre_launch
     fi
     if [[ "$#" -eq 0 ]]; then
         launch_browser "${BANKING_SITES[@]}"

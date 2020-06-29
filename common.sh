@@ -48,8 +48,12 @@ required_var() {
     fi
 }
 
+is_func() {
+  declare -F "$1" >/dev/null 2>/dev/null
+}
+
 required_func() {
-  if ! declare -F "$1" >/dev/null 2>/dev/null; then
+  if ! is_func "$1"; then
     fatal "The function $1 is required, but is not declared."
   fi
 }
