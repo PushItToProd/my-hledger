@@ -1,4 +1,0 @@
-#!/usr/bin/env bash
-# Display loan balances over time.
-
-"$(dirname "$0")/hledger-loan_balances" --monthly --cumulative

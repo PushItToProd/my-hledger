@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+# Display loan balances over time.
+
+FROM="$(date -d "20 months ago" +"%Y-%m")"
+
+"$(dirname "$0")/hledger-loans" --monthly --cumulative --begin="$FROM"
