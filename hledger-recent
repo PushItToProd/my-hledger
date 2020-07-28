@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+FROM="$(date -d "7 days ago" +"%Y-%m-%d")"
+
+hledger print -b "$FROM" "$@"
