@@ -12,7 +12,7 @@ import sys
 
 
 # Used to strip non-numeric characters that break Python's decimal parsing.
-NON_NUMERIC_CHARS = re.compile('[^0-9.]')
+NON_NUMERIC_CHARS = re.compile('[^0-9-.]')
 
 
 def get_parser():
