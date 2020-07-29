@@ -1,0 +1,52 @@
+#!/usr/bin/env python3.8
+"""
+Validate that envelopes are properly allocated.
+"""
+import csv
+import decimal
+import io
+import re
+import subprocess
+
+
+# Used to strip non-numeric characters that break Python's decimal parsing.
+NON_NUMERIC_CHARS = re.compile('[^0-9.-]')
+
+SKIP_ACCOUNTS = {"Budget:Savings"}
+
+
+def hledger_decimal(n):
+    """
+    Convert an hledger dollar amount to a Decimal. NON_NUMERIC_CHARS is used to
+    preprocess the hledger string value by removing non-numeric characters.
+    """
+    stripped = re.sub(NON_NUMERIC_CHARS, '', n)
+    return decimal.Decimal(stripped)
+
+
+def main():
+    run_result = subprocess.run(
+        ["hledger-envelopes", "-O", "csv"],
+        capture_output=True,
+        universal_newlines=True,
+    )
+
+    output = run_result.stdout
+
+    buf = io.StringIO(output)
+    reader = csv.DictReader(buf)
+
+    account_balances = {
+        row["account"]: hledger_decimal(row["balance"])
+        for row in reader
+    }
+
+    for account, balance in account_balances.items():
+        # print(f"{account}: {balance}")
+        if account in SKIP_ACCOUNTS:
+            continue
+        assert balance >= 0, f"{account} is negative! - ${balance}"
+
+
+if __name__ == "__main__":
+    main()
