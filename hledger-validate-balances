@@ -12,7 +12,8 @@ import subprocess
 # Used to strip non-numeric characters that break Python's decimal parsing.
 NON_NUMERIC_CHARS = re.compile('[^0-9.-]')
 
-SKIP_ACCOUNTS = {"Budget:Savings"}
+# TODO Make this a config var.
+SKIP_ACCOUNTS = {"Budget:Savings", "Budget:Buffer"}
 
 
 def hledger_decimal(n):
