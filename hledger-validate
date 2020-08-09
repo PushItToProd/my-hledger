@@ -4,3 +4,4 @@ set -euo pipefail
 hledger validate-dates
 hledger validate-envelopes
 hledger validate-balances
+hledger validate-assertions

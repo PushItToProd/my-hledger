@@ -78,6 +78,8 @@ main() {
   for journal in "$@"; do
     validate_journal_assertions "$journal"
   done
+
+  info "All assertions passed"
 }
 if is_main; then
   main "$@"
