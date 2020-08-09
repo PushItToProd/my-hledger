@@ -1,0 +1,84 @@
+#!/usr/bin/env bash
+# Parse directives in journal files to validate the balance of their associated
+# accounts.
+# Directives:
+#   #account (required): the name of the associated hledger account
+#   #type (optional, default 'asset'): if set to 'credit', the asserted balance
+#       will be checked against the account balance without pending transactions
+#       included
+#   #assert balance=AMOUNT (required): the expected account balance in dollars
+#       (doesn't currently support other commodities)
+
+# shellcheck source=common.sh
+source "$(dirname "$0")/common.sh"
+
+get_associated_account() {
+  grep -oP '#account \K.*' "$1" | head -n 1
+}
+
+get_account_type() {
+  grep -oP '#type \K.*' "$1" | head -n 1
+}
+
+get_asserted_balance() {
+  grep -oP '#assert balance=\K.*' "$1" | tail -n 1
+}
+
+validate_journal_assertions() {
+  local -r journal_file="$1"
+
+  local -r account="$(get_associated_account "$journal_file")"
+  if [[ ! "$account" ]]; then
+    debug "No account directive in $journal_file - ignoring"
+    return
+  fi
+
+  local type="$(get_account_type "$journal_file")"
+  if [[ ! "$type" ]]; then
+    debug "No type directive in $journal_file - assuming asset"
+    type=asset
+  fi
+
+  local -r asserted_balance="$(get_asserted_balance "$journal_file")"
+  if [[ ! "$asserted_balance" ]]; then
+    debug "No asserted balance in $journal_file"
+    return
+  fi
+
+  debug "validating $(basename "$journal_file")"
+  debug "  Account: $account"
+  debug "  Type: $type"
+  debug "  Asserted Balance: $asserted_balance"
+
+  local actual_balance
+  case "$type" in
+    credit)
+      actual_balance="$(liability_account_balance "$account")"
+      ;;
+    *)
+      actual_balance="$(asset_account_balance "$account")"
+      ;;
+  esac
+  debug "  Actual Balance: $actual_balance"
+
+  if ! bal_equal "$asserted_balance" "$actual_balance"; then
+    fatal "Assertion failed for $account: expected balance $asserted_balance" \
+      "(actual balance $actual_balance)"
+  else
+    debug "Balances match!"
+  fi
+}
+
+main() {
+  if (( "$#" == 0 )); then
+    apply validate_journal_assertions
+    return
+  fi
+
+  for journal in "$@"; do
+    validate_journal_assertions "$journal"
+  done
+}
+if is_main; then
+  main "$@"
+fi

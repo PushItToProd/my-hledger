@@ -1,0 +1,5 @@
+2020-08-09 ! test txn
+    acct1
+    acct2  $10.99
+
+; #assert balance=$10.99

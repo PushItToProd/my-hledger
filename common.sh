@@ -15,11 +15,25 @@ set -euo pipefail
 # PROGNAME is the name of the running script.
 : "${PROGNAME:="$(basename "$0")"}"
 
+# An environment variable setting the debug state
+: "${MY_HLEDGER_DEBUG:=}"
+
 ### Simple logging helpers
+
+debug() {
+  if [[ "$MY_HLEDGER_DEBUG" != "" ]]; then
+    echo "debug: $*" >&2
+  fi
+}
 
 # Display a non-urgent note that will be somewhat emphasized in the output.
 info() {
   echo "$(tput setaf 4)info: $*$(tput sgr0)" >&2
+}
+
+# Display a warning in yellow
+warn() {
+  echo "$(tput setaf 3)warning: $*$(tput sgr0)" >&2
 }
 
 # Display an error message in red.
@@ -65,6 +79,8 @@ is_main() {
   [[ "${BASH_SOURCE[1]}" == "$0" ]]
 }
 
+### Hledger utilities
+
 # Find all .journal files in the journals/ directory adjacent to the ledger
 # file.
 list_journals() {
@@ -80,6 +96,72 @@ apply() {
   for j in $(list_journals); do
     "$@" "$j"
   done
+}
+
+asset_balance() {
+  hledger bal --flat -ERCP "$@"
+}
+
+liability_balance() {
+  hledger bal --flat -EC "$@"
+}
+
+_asset_account_balance() {
+  asset_balance --no-total --format '%(total)' "$@"
+}
+
+_liability_account_balance() {
+  liability_balance --no-total --format '%(total)' "$@"
+}
+
+asset_account_balance() {
+  local balance="$(_asset_account_balance "$@")"
+  is_dollar_amount "$balance" \
+    || fatal "asset_account_balance: Expected one account balance in dollars but got $balance"
+  echo "$balance"
+}
+
+liability_account_balance() {
+  local balance="$(_liability_account_balance "$@")"
+  is_dollar_amount "$balance" \
+    || fatal "liability_account_balance: Expected one account balance in dollars but got $balance"
+  echo "$balance"
+}
+
+balance_to_num() {
+  : "${1#$}"
+  : "${_//,/}"
+  echo "$_"
+}
+
+### Data validation
+
+readonly numeric_regex='^-?[0-9]+(\.[0-9]+)?$'
+readonly dollar_amount_regex='^\$-?[0-9,]+(\.[0-9]+)?$'
+
+is_numeric() {
+  [[ "$1" =~ $numeric_regex ]]
+}
+
+is_dollar_amount() {
+  [[ "$1" =~ $dollar_amount_regex ]]
+}
+
+### Math functions
+
+# Compare two numbers using bc, which allows us to support floating point.
+num_equal() {
+  is_numeric "$1" \
+    || fatal "$0 must be given numeric arguments but got $1 instead"
+  is_numeric "$1" \
+    || fatal "$0 must be given numeric arguments but got $1 instead"
+  [[ "$(bc <<<"$1 == $2")" == 1 ]]
+}
+
+bal_equal() {
+  local balance1="$(balance_to_num "$1")"
+  local balance2="$(balance_to_num "$2")"
+  num_equal "$balance1" "$balance2"
 }
 
 ### Pre-run validation
