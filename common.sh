@@ -137,7 +137,7 @@ balance_to_num() {
 ### Data validation
 
 readonly numeric_regex='^-?[0-9]+(\.[0-9]+)?$'
-readonly dollar_amount_regex='^\$-?[0-9,]+(\.[0-9]+)?$'
+readonly dollar_amount_regex='^(\$-?[0-9,]+(\.[0-9]+)?|0)$'
 
 is_numeric() {
   [[ "$1" =~ $numeric_regex ]]

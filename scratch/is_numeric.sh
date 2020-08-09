@@ -1,15 +1,7 @@
 #!/usr/bin/env bash
 
-readonly numeric_regex='^[0-9]+(\.[0-9]+)?$'
-readonly dollar_amount_regex='^\$[0-9,]+(\.[0-9]+)?$'
-
-pass() {
-  echo " ✅ $(tput setaf 2)$*$(tput sgr0)"
-}
-
-fail() {
-  echo " ❗ $(tput setaf 1)$*$(tput sgr0)"
-}
+readonly numeric_regex='^-?[0-9]+(\.[0-9]+)?$'
+readonly dollar_amount_regex='^(\$-?[0-9,]+(\.[0-9]+)?|0)$'
 
 is_numeric() {
   [[ "$1" =~ $numeric_regex ]]
@@ -17,6 +9,14 @@ is_numeric() {
 
 is_dollar_amount() {
   [[ "$1" =~ $dollar_amount_regex ]]
+}
+
+pass() {
+  echo " ✅ $(tput setaf 2)$*$(tput sgr0)"
+}
+
+fail() {
+  echo " ❗ $(tput setaf 1)$*$(tput sgr0)"
 }
 
 assert() {
@@ -57,6 +57,7 @@ assert_numeric 10
 assert_numeric 10.00
 assert_numeric 1234
 assert_numeric 12.34
+assert_numeric 0
 assert_not_numeric abc
 assert_not_numeric 12.34.56
 
@@ -69,4 +70,6 @@ single_acct_bal="$(hledger bal --flat -ERCP Assets:Checking:Chase -N --format '%
 assert "is_dollar_amount $single_acct_bal"
 
 multi_acct_bal="$(hledger bal --flat -ERCP Assets -N --format '%(total)')"
-assert_not "is_dollar_amount $multi_acct_bal"
+assert_not "is_dollar_amount '$multi_acct_bal'"
+
+assert "is_dollar_amount 0"
