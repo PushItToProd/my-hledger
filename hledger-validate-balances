@@ -48,6 +48,8 @@ def main():
             continue
         assert balance >= 0, f"{account} is negative! - ${balance}"
 
+    print("Envelopes are properly budgeted!")
+
 
 if __name__ == "__main__":
     main()

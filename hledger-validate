@@ -1,7 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+echo "** Validating all transactions are in order"
 hledger validate-dates
+echo "** Validating budget balance matches net worth"
 hledger validate-envelopes
+echo "** Validating everything is budgeted"
 hledger validate-balances
+echo "** Validating balance assertions"
 hledger validate-assertions

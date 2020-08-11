@@ -72,6 +72,7 @@ validate_journal_assertions() {
 main() {
   if (( "$#" == 0 )); then
     apply validate_journal_assertions
+    echo "All assertions passed!"
     return
   fi
 
@@ -79,7 +80,7 @@ main() {
     validate_journal_assertions "$journal"
   done
 
-  info "All assertions passed"
+  echo "All assertions passed!"
 }
 if is_main; then
   main "$@"
