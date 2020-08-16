@@ -9,6 +9,6 @@ source "$DIR/common.sh"
 required_var CASH_ACCOUNTS
 required_var BUDGET_ACCOUNTS
 
-python3.7 "$DIR/validate_envelopes.py" \
+python3 "$DIR/validate_envelopes.py" \
   --cash-accounts "${CASH_ACCOUNTS[@]}" \
   --budget-accounts "${BUDGET_ACCOUNTS[@]}"
