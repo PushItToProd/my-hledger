@@ -12,14 +12,23 @@
 # shellcheck source=common.sh
 source "$(dirname "$0")/common.sh"
 
+# Get the account associated with the given journal.
+# Args:
+#   $1 - The path to a journal file.
 get_associated_account() {
   grep -oP '#account \K.*' "$1" | head -n 1
 }
 
+# Get the type of the account associated with the given journal.
+# Args:
+#   $1 - The path to a journal file.
 get_account_type() {
   grep -oP '#type \K.*' "$1" | head -n 1
 }
 
+# Get the balance asserted in a given journal.
+# Args:
+#   $1 - The path to a journal file.
 get_asserted_balance() {
   grep -oP '#assert balance=\K.*' "$1" | tail -n 1
 }
