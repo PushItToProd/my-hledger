@@ -53,6 +53,38 @@ is_not_balance_line() {
     || [[ ! "$acct" ]]
 }
 
+# Globals:
+#   $journal_file
+#   $bal
+print_flag_if_assertions_fail() {
+  local -r asserted_balance="$(get_asserted_balance "$journal_file")"
+  if [[ ! "$asserted_balance" ]]; then
+    debug "No asserted balance in $journal_file"
+    return
+  fi
+
+  if ! bal_equal "$asserted_balance" "$bal"; then
+    echo -n " $(tput setaf 1)(assertions!)$(tput sgr0)"
+  fi
+}
+
+# Globals:
+#   $acct
+#   $bal
+print_flags() {
+  # get journal file
+  journal_file="$(get_account_journal "$acct")"
+
+  # skip if no journal was found
+  if [[ ! "$journal_file" ]]; then
+    return
+  fi
+
+  print_flag_if_assertions_fail
+}
+
+# Given a line of output from hledger-totals, process it and add extra metadata
+# as needed.
 process_line() {
   local line="$1"
   local bal acct journal_file
@@ -65,28 +97,7 @@ process_line() {
 
   _print_line "$bal" "$acct"
 
-  # get journal file
-  journal_file="$(get_account_journal "$acct")"
-
-  # print a newline and continue if no journal was found
-  if [[ ! "$journal_file" ]]; then
-    echo
-    return
-  fi
-
-  local -r asserted_balance="$(get_asserted_balance "$journal_file")"
-  if [[ ! "$asserted_balance" ]]; then
-    debug "No asserted balance in $journal_file"
-    echo
-    return
-  fi
-
-  if ! bal_equal "$asserted_balance" "$bal"; then
-    echo " $(tput setaf 1)(assertions!)$(tput sgr0)"
-    return
-  fi
-
-  # print a newline
+  print_flags
   echo
 }
 
