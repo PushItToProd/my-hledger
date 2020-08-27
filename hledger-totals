@@ -1,22 +1,103 @@
 #!/usr/bin/env bash
-# Display balances of all my major accounts. Budget and non-cash accounts are
-# excluded.
+# Take the output of hledger-totals-raw and validate each account.
 
-# shellcheck source=common.sh
-source "$(dirname "$0")/common.sh"
+# shellcheck source=hledger-validate-assertions
+source "$(dirname "${BASH_SOURCE[0]}")/hledger-validate-assertions"
 
-required_var REGULAR_ASSET_ACCOUNTS
-
-b() {
-  hledger bal --flat "$@"
+get_account_journal() {
+  grep -r --files-with-matches "#account $1" "$JOURNALS_DIR" | head -n 1 || true
 }
 
-echo ====== Assets =======
-b -ERCP "$@" "${REGULAR_ASSET_ACCOUNTS[@]}"
+# Print the current line, formatted appropriately. This replicates the
+# formatting of hledger-totals.
+# Globals:
+#   $bal
+#   $acct
+#   $line
+_print_line() {
+  # If it's a negative balance, print it as a formatted balance line with the
+  # amount in red.
+  if [[ "$bal" == '$-'* ]]; then
+    printf "$(tput setaf 1)%20s$(tput sgr0)  %s" "$bal" "$acct"
+    return
+  fi
 
-echo
+  # If balance is a dollar amount or zero, print it as a formatted balance line.
+  if [[ "$bal" == '$'* ]] || [[ "$bal" == 0 ]]; then
+    printf "%20s  %s" "$bal" "$acct"
+    return
+  fi
 
-if is_set REGULAR_LIABILITY_ACCOUNTS; then
-  echo ==== Liabilities ====
-  b -EC "$@" "${REGULAR_LIABILITY_ACCOUNTS[@]}"
-fi
+  printf '%s' "$line"
+}
+
+# _print_line but with a newline at the end.
+print_line() {
+  _print_line
+  echo
+}
+
+# Globals:
+#   $bal
+#   $acct
+is_not_balance_line() {
+  # if the line starts with '===' or '---' it's a delimiter
+  # if bal is null then the line is empty
+  # if acct is null then it's a total line and we don't want to process it
+  [[ "$bal" == "==="* ]] \
+    || [[ "$bal" == "---"* ]] \
+    || [[ ! "$bal" ]] \
+    || [[ ! "$acct" ]]
+}
+
+# Globals:
+#   $journal_file
+#   $bal
+print_flag_if_assertions_fail() {
+  local -r asserted_balance="$(get_asserted_balance "$journal_file")"
+  if [[ ! "$asserted_balance" ]]; then
+    debug "No asserted balance in $journal_file"
+    return
+  fi
+
+  if ! bal_equal "$asserted_balance" "$bal"; then
+    echo -n " $(tput setaf 1)(assserted balance: $asserted_balance)$(tput sgr0)"
+  fi
+}
+
+# Globals:
+#   $acct
+#   $bal
+print_flags() {
+  # get journal file
+  journal_file="$(get_account_journal "$acct")"
+
+  # skip if no journal was found
+  if [[ ! "$journal_file" ]]; then
+    return
+  fi
+
+  print_flag_if_assertions_fail
+}
+
+# Given a line of output from hledger-totals, process it and add extra metadata
+# as needed.
+process_line() {
+  local line="$1"
+  local bal acct journal_file
+  read -r bal acct <<<"$line"
+
+  if is_not_balance_line "$bal" "$acct"; then
+    print_line "$bal" "$acct"
+    return
+  fi
+
+  _print_line "$bal" "$acct"
+
+  print_flags
+  echo
+}
+
+while read -r line; do
+  process_line "$line"
+done < <(hledger-totals-raw)
