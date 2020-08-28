@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+# Utility for grepping journal files.
+
+# shellcheck source=common.sh
+source "$(dirname "${BASH_SOURCE[0]}")/common.sh"
+
+# Loop over the grep results and preprocess them.
+while read -r line; do
+  # Extract filename from the line
+  filename="${line%%:*}"
+  # Extract the rest of the line
+  result="${line#"$filename":}"
+  # Make the path relative to the journals directory so it's not as lengthy
+  path="$(realpath --relative-to="$JOURNALS_DIR/.." "$filename")"
+  # Put the path and result back together
+  echo "$path: $result"
+done < <(grep --recursive --ignore-case "$@" "$JOURNALS_DIR")
