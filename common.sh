@@ -93,7 +93,8 @@ list_journals() {
 
 # Apply the given command to every journal given by `list_journals`.
 apply() {
-  for j in $(list_journals); do
+  for j in $(list_journals); do  # TODO: use a while-read here
+    debug "apply:" "$@" "$j"
     "$@" "$j"
   done
 }
