@@ -117,15 +117,20 @@ _liability_account_balance() {
 
 asset_account_balance() {
   local balance="$(_asset_account_balance "$@")"
-  is_dollar_amount "$balance" \
-    || fatal "asset_account_balance: Expected one account balance in dollars but got $balance"
+  if ! is_dollar_amount "$balance"; then
+    error "asset_account_balance: Expected one account balance in dollars but got $balance"
+    return 1
+  fi
   echo "$balance"
 }
 
 liability_account_balance() {
-  local balance="$(_liability_account_balance "$@")"
-  is_dollar_amount "$balance" \
-    || fatal "liability_account_balance: Expected one account balance in dollars but got $balance"
+  local balance
+  balance="$(_liability_account_balance "$@")"
+  if ! is_dollar_amount "$balance"; then
+    error "liability_account_balance: Expected one account balance in dollars but got $balance"
+    return 1
+  fi
   echo "$balance"
 }
 

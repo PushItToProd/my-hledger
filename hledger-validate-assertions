@@ -65,10 +65,14 @@ validate_journal_assertions() {
   local actual_balance
   case "$type" in
     credit)
-      actual_balance="$(liability_account_balance "$account")"
+      if ! actual_balance="$(liability_account_balance "$account")"; then
+        fatal "Couldn't get balance for account $account"
+      fi
       ;;
     *)
-      actual_balance="$(asset_account_balance "$account")"
+      if ! actual_balance="$(asset_account_balance "$account")"; then
+        fatal "Couldn't get balance for account $account"
+      fi
       ;;
   esac
   debug "  Actual Balance: $actual_balance"
