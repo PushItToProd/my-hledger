@@ -8,14 +8,23 @@ required_var BANKING_SITES
 required_var BANKING_BROWSER
 required_var LEDGER_EDITOR
 
-launch_browser() {
-  i3-firefox "$1"
+launch_browser_all() {
+  i3-browser "$@"
+}
+
+launch_browser_iter() {
+  i3-browser "$1"
   shift
   sleep 0.25
 
   for site in "$@"; do
-    i3-firefox "$site"
+    i3-browser "$site"
+    sleep 0.25
   done
+}
+
+launch_browser() {
+  launch_browser_all "$@"
 }
 
 launch_editor() {
