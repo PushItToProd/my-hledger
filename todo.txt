@@ -27,3 +27,10 @@ save_txn
 - check all required globals
 - validate that journal_path exists before saving
 - allow saving to a custom file
+
+hledger-validate
+----------------
+
+- validate that all transactions in a journal involve the asserted account
+  - e.g. every transaction in costco.journal has Liabilities:Credit:Citi:Costco
+    on one of its lines
