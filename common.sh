@@ -164,10 +164,26 @@ num_equal() {
   [[ "$(bc <<<"$1 == $2")" == 1 ]]
 }
 
+num_subtract() {
+  is_numeric "$1" \
+    || fatal "$0 must be given numeric arguments but got $1 instead"
+  is_numeric "$1" \
+    || fatal "$0 must be given numeric arguments but got $1 instead"
+  bc <<<"$1 - $2"
+}
+
 bal_equal() {
-  local balance1="$(balance_to_num "$1")"
-  local balance2="$(balance_to_num "$2")"
+  local balance1 balance2
+  balance1="$(balance_to_num "$1")"
+  balance2="$(balance_to_num "$2")"
   num_equal "$balance1" "$balance2"
+}
+
+bal_subtract() {
+  local balance1 balance2
+  balance1="$(balance_to_num "$1")"
+  balance2="$(balance_to_num "$2")"
+  num_subtract "$balance1" "$balance2"
 }
 
 ### Pre-run validation
