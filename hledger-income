@@ -3,6 +3,5 @@
 # worth (excluding liabilities).
 
 FROM="$(date -d "1 year ago" +"%Y-%m")"
-TO="$(date -d "next month" +"%Y-%m")"
 
-hledger is -M --tree -b "$FROM" -e "$TO" "$@"
+hledger is -M --tree -b "$FROM" "$@"
