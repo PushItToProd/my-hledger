@@ -2,6 +2,4 @@
 # The incomestatement command shows Revenues vs Expenses to calculate cash net
 # worth (excluding liabilities).
 
-FROM="$(date -d "1 year ago" +"%Y-%m")"
-
-hledger is -M --tree -b "$FROM" "$@"
+hledger is -M --tree "$@"
