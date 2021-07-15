@@ -1,6 +1,6 @@
 #!/usr/bin/env python3.8
 """
-Validate that envelopes are properly allocated.
+Validate that envelope account balances aren't negative.
 """
 import csv
 import decimal

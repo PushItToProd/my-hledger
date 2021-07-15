@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Wrapper for validate_envelopes.py that marshals bash config options to Python
+# Wrapper for validate_envelopes.py that passes bash config options as Python
 # parameters, since we can't pass arrays as environment variables.
 
 DIR=$(dirname "$0")

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """
-Check whether budget and actual account balances match.
+Validate that the virtual balances of my budget accounts match the actual
+balances of my real bank accounts, ensuring that all my dollars are budgeted.
 """
 import argparse
 import csv
