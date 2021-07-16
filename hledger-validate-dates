@@ -6,7 +6,7 @@
 # shellcheck source=common.sh
 source "$(dirname "$0")/common.sh"
 
-if ! apply hledger check-dates --ignore-assertions -f | grep -i ERROR --after-context=20; then
+if ! apply hledger check ordereddates --ignore-assertions -f | grep -i ERROR --after-context=20; then
   if [[ "${PIPESTATUS[0]}" -ne 0 ]]; then
     fatal "Checking dates failed."
   fi
