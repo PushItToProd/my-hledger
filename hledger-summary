@@ -2,8 +2,8 @@
 # The incomestatement command shows Revenues vs Expenses to calculate cash net
 # worth (excluding liabilities).
 
-FROM="$(date -d "1 year ago" +"%Y-%m")"
-TO="$(date -d "this month" +"%Y-%m")"
+: "${FROM=thisyear}"
+: "${TO=nextmonth}"
 
 
 hledger is --monthly --tree --begin="$FROM" --end="$TO" --average --row-total "$@"
