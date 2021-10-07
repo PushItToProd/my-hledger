@@ -23,33 +23,71 @@ launch_browser_iter() {
 }
 
 launch_browser() {
-  launch_browser_all "$@"
+  launch_browser_all "${BANKING_SITES[@]}" &>/dev/null &
+  disown
 }
 
 launch_editor() {
   # shellcheck disable=SC2046
-  "${LEDGER_EDITOR[@]}" $(list_journals)
+  # setsid is required here to keep C-c from killing the emacs process after
+  # it's disowned
+  setsid "${LEDGER_EDITOR[@]}" $(list_journals) &>/dev/null &
+  disown
+}
+
+launch_ext_shell() {
+  x-terminal-emulator -e hledger-shell &
+  disown
+}
+
+in_terminal() {
+  # check whether stdin refers to a terminal
+  [[ -t 1 ]]
+}
+
+launch_shell() {
+  if in_terminal; then
+    clear
+    hledger-shell
+  else
+    launch_ext_shell
+  fi
+}
+
+launch_all() {
+  launch_browser
+  launch_editor
+  launch_shell
 }
 
 main() {
   if is_func pre_launch; then
     pre_launch
   fi
+
   if [[ "$#" -eq 0 ]]; then
-    launch_browser "${BANKING_SITES[@]}"
-    launch_editor
-    return
+    set -- all
   fi
-  case "$1" in
-    browser|chrome)
-      launch_browser "${BANKING_SITES[@]}"
-      ;;
-    emacs|editor)
-      launch_editor
-      ;;
-    *)
-      fatal "unrecognized command: $1"
-      ;;
-  esac
+
+  while (( "$#" )); do
+    case "$1" in
+      b|browser)
+        launch_browser
+        ;;
+      e|emacs|editor)
+        launch_editor
+        ;;
+      s|shell)
+        launch_shell
+        ;;
+      a|all)
+        launch_all
+        ;;
+      *)
+        fatal "unrecognized command: $1"
+        ;;
+    esac
+    shift
+  done
 }
 is_main && main "$@"
