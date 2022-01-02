@@ -46,9 +46,9 @@ def run(*args, **kwargs):
             yield proc
         finally:
             try:
-                proc.wait(timeout=1)
-            except subprocess.TimeoutExpired:
                 proc.kill()
+            except subprocess.TimeoutExpired:
+                proc.wait()
 
 
 def hledger_print(*args, **kwargs):
