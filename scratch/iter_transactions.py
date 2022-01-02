@@ -8,7 +8,7 @@ from contextlib import contextmanager
 
 
 @contextmanager
-def run(*args, **kwargs):
+def run(cmd, shell=True, **kwargs):
     """
     Execute the given command using Popen, with stdout=PIPE and text=True.
 
@@ -16,7 +16,7 @@ def run(*args, **kwargs):
     since we can process stdout directly without waiting for the command to run
     and its output to be read into a string.
     """
-    with Popen(args, stdout=PIPE, text=True, **kwargs) as proc:
+    with Popen(cmd, stdout=PIPE, text=True, shell=shell, **kwargs) as proc:
         try:
             yield proc
         finally:
@@ -26,13 +26,13 @@ def run(*args, **kwargs):
                 proc.wait()
 
 
-def hledger_print(*args, **kwargs):
-    return run("hledger", "print", "-O", "csv", *args, **kwargs)
-
-
 def iter_transactions():
+    """
+    Iterate over the transactions from hledger_print(), returning a tuple of
+    each transaction's txnidx and its lines from the CSV.
+    """
     get_key = lambda t: t['txnidx']
-    with hledger_print() as proc:
+    with run("hledger print -O csv") as proc:
         reader = csv.DictReader(proc.stdout)
         for txnidx, lines in itertools.groupby(reader, key=get_key):
             yield txnidx, lines
