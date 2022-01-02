@@ -32,7 +32,11 @@ class Line:
 @contextmanager
 def run(*args, **kwargs):
     """
-    Wrapper for subprocess.run that sets some default parameters.
+    Execute the given command using Popen, with stdout=PIPE and text=True.
+
+    Using Popen instead of subprocess.run() provides a major performance boost,
+    since we can process stdout directly without waiting for the command to run
+    and its output to be read into a string.
     """
     cmd, *cmd_args = args
     if cmd[0] not in ('.', '/'):
