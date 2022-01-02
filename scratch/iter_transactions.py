@@ -1,6 +1,7 @@
 #!/usr/bin/env python3.9
 import csv
 import io
+import itertools
 import shutil
 from subprocess import PIPE, Popen, TimeoutExpired
 from contextlib import contextmanager
@@ -53,15 +54,11 @@ def hledger_print(*args, **kwargs):
 
 
 def iter_transactions(reader):
-    txnidx = None
-    lines = []
-    for row in reader:
-        line = Line.from_row(row)
-        if line.txnidx != txnidx:
+    get_key = lambda t: t['txnidx']
+    with hledger_print() as proc:
+        reader = csv.DictReader(proc.stdout)
+        for txnidx, lines in itertools.groupby(reader, key=get_key):
             yield txnidx, lines
-            txnidx = line.txnidx
-            lines = []
-        lines.append(line)
 
 
 def main():
