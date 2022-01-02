@@ -48,6 +48,11 @@ def print_transaction(lines):
         print("    ;", comment)
     for line in lines:
         amount = line['amount']
+        commodity = line['commodity']
+        if commodity == '$':
+            amount = commodity + amount
+        else:
+            amount = amount + ' ' + commodity
         line_status = line['posting-status']
         if line_status:
             line_status += ' '
@@ -56,7 +61,7 @@ def print_transaction(lines):
         if comment:
             comment = " ; " + comment
 
-        print(f"    {account:39} {amount:>8}{comment}")
+        print(f"    {account:38} {amount:>9}{comment}")
 
 
 def main():
