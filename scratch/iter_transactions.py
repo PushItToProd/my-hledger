@@ -35,14 +35,34 @@ def iter_transactions():
     with run("hledger print -O csv") as proc:
         reader = csv.DictReader(proc.stdout)
         for txnidx, lines in itertools.groupby(reader, key=get_key):
-            yield txnidx, lines
+            yield txnidx, list(lines)
+
+
+def print_transaction(lines):
+    line = lines[0]
+    date = line['date']
+    status = line['status']
+    description = line['description']
+    print(f"{date} {status} {description}")
+    if comment := line['comment']:
+        print("    ;", comment)
+    for line in lines:
+        amount = line['amount']
+        line_status = line['posting-status']
+        if line_status:
+            line_status += ' '
+        account = line['account']
+        comment = line['posting-comment']
+        if comment:
+            comment = " ; " + comment
+
+        print(f"    {account:39} {amount:>8}{comment}")
 
 
 def main():
     for txnidx, lines in iter_transactions():
-        print(f"\n=== Transaction {txnidx} ===")
-        for line in lines:
-            print(line)
+        print("")
+        print_transaction(lines)
 
 
 if __name__ == '__main__':
