@@ -53,7 +53,7 @@ def hledger_print(*args, **kwargs):
     return run("hledger", "print", "-O", "csv", *args, **kwargs)
 
 
-def iter_transactions(reader):
+def iter_transactions():
     get_key = lambda t: t['txnidx']
     with hledger_print() as proc:
         reader = csv.DictReader(proc.stdout)
@@ -62,13 +62,10 @@ def iter_transactions(reader):
 
 
 def main():
-    with hledger_print() as proc:
-        buf = proc.stdout
-        reader = csv.DictReader(buf)
-        for txnidx, lines in iter_transactions(reader):
-            print(f"\n=== Transaction {txnidx} ===")
-            for line in lines:
-                print(line)
+    for txnidx, lines in iter_transactions():
+        print(f"\n=== Transaction {txnidx} ===")
+        for line in lines:
+            print(line)
 
 
 if __name__ == '__main__':
