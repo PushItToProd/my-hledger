@@ -53,20 +53,25 @@ def hledger_print(*args, **kwargs):
 
 
 def iter_transactions(reader):
-    txn = None
+    txnidx = None
+    lines = []
     for row in reader:
-        if row.txnidx != txn:
-            txn = row.txnidx
-            print("")
-            print(f"=== Transaction {txn} ===")
-        print(row)
+        line = Line.from_row(row)
+        if line.txnidx != txnidx:
+            yield txnidx, lines
+            txnidx = line.txnidx
+            lines = []
+        lines.append(line)
 
 
 def main():
     with hledger_print() as proc:
         buf = proc.stdout
-        reader = (Line.from_row(r) for r in csv.DictReader(buf))
-        iter_transactions(reader)
+        reader = csv.DictReader(buf)
+        for txnidx, txn in iter_transactions(reader):
+            print(f"\n=== Transaction {txnidx} ===")
+            for row in txn:
+                print(row)
 
 
 if __name__ == '__main__':
