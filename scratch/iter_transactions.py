@@ -1,7 +1,9 @@
 #!/usr/bin/env python3.9
 import csv
 import io
+import shutil
 import subprocess
+from contextlib import contextmanager
 from dataclasses import dataclass, field, fields
 
 
@@ -27,27 +29,33 @@ class Line:
         )
 
 
+@contextmanager
 def run(*args, **kwargs):
     """
     Wrapper for subprocess.run that sets some default parameters.
     """
-    return subprocess.run(
-        args,
-        capture_output=True,
-        universal_newlines=True,
-        **kwargs
-    )
+    cmd, *cmd_args = args
+    if cmd[0] not in ('.', '/'):
+        cmd = shutil.which(cmd)
+        assert cmd, f"could not find {args[0]} on the path"
+
+    args = (cmd, *cmd_args)
+
+    with subprocess.Popen(args, stdout=subprocess.PIPE, text=True) as proc:
+        try:
+            yield proc
+        finally:
+            try:
+                proc.wait(timeout=1)
+            except subprocess.TimeoutExpired:
+                proc.kill()
 
 
 def hledger_print(*args, **kwargs):
     return run("hledger", "print", "-O", "csv", *args, **kwargs)
 
 
-def main():
-    proc = hledger_print()
-    buf = io.StringIO(proc.stdout)
-    reader = (Line.from_row(r) for r in csv.DictReader(buf))
-
+def iter_transactions(reader):
     txn = None
     for row in reader:
         if row.txnidx != txn:
@@ -55,6 +63,13 @@ def main():
             print("")
             print(f"=== Transaction {txn} ===")
         print(row)
+
+
+def main():
+    with hledger_print() as proc:
+        buf = proc.stdout
+        reader = (Line.from_row(r) for r in csv.DictReader(buf))
+        iter_transactions(reader)
 
 
 if __name__ == '__main__':
