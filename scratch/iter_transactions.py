@@ -2,7 +2,7 @@
 import csv
 import io
 import shutil
-import subprocess
+from subprocess import PIPE, Popen, TimeoutExpired
 from contextlib import contextmanager
 from dataclasses import dataclass, field, fields
 
@@ -45,13 +45,13 @@ def run(*args, **kwargs):
 
     args = (cmd, *cmd_args)
 
-    with subprocess.Popen(args, stdout=subprocess.PIPE, text=True) as proc:
+    with Popen(args, stdout=PIPE, text=True, **kwargs) as proc:
         try:
             yield proc
         finally:
             try:
                 proc.kill()
-            except subprocess.TimeoutExpired:
+            except TimeoutExpired:
                 proc.wait()
 
 
