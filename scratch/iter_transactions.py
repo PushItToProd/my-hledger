@@ -65,10 +65,10 @@ def main():
     with hledger_print() as proc:
         buf = proc.stdout
         reader = csv.DictReader(buf)
-        for txnidx, txn in iter_transactions(reader):
+        for txnidx, lines in iter_transactions(reader):
             print(f"\n=== Transaction {txnidx} ===")
-            for row in txn:
-                print(row)
+            for line in lines:
+                print(line)
 
 
 if __name__ == '__main__':
