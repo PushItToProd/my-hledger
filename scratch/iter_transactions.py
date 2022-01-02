@@ -38,13 +38,6 @@ def run(*args, **kwargs):
     since we can process stdout directly without waiting for the command to run
     and its output to be read into a string.
     """
-    cmd, *cmd_args = args
-    if cmd[0] not in ('.', '/'):
-        cmd = shutil.which(cmd)
-        assert cmd, f"could not find {args[0]} on the path"
-
-    args = (cmd, *cmd_args)
-
     with Popen(args, stdout=PIPE, text=True, **kwargs) as proc:
         try:
             yield proc
