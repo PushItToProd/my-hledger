@@ -1,0 +1,131 @@
+#!/usr/bin/env python3.9
+import csv
+import io
+import itertools
+import shutil
+import sys
+from subprocess import PIPE, Popen, TimeoutExpired
+from contextlib import contextmanager
+
+
+@contextmanager
+def run(cmd, shell=True, **kwargs):
+    """
+    Execute the given command using Popen, with stdout=PIPE and text=True.
+
+    Using Popen instead of subprocess.run() provides a major performance boost,
+    since we can process stdout directly without waiting for the command to run
+    and its output to be read into a string.
+    """
+    with Popen(cmd, stdout=PIPE, text=True, shell=shell, **kwargs) as proc:
+        try:
+            yield proc
+        finally:
+            try:
+                proc.kill()
+            except TimeoutExpired:
+                proc.wait()
+
+
+def iter_transactions():
+    """
+    Iterate over the transactions from hledger_print(), returning a tuple of
+    each transaction's txnidx and its lines from the CSV.
+    """
+    get_key = lambda t: t['txnidx']
+    with run("hledger print -O csv") as proc:
+        reader = csv.DictReader(proc.stdout)
+        for txnidx, lines in itertools.groupby(reader, key=get_key):
+            yield txnidx, list(lines)
+
+
+def print_transaction(lines):
+    line = lines[0]
+    date = line['date']
+    status = line['status']
+    description = line['description']
+    print(f"{date} {status} {description}")
+    if comment := line['comment']:
+        print("    ;", comment)
+    for line in lines:
+        amount = line['amount']
+        commodity = line['commodity']
+        if commodity == '$':
+            amount = commodity + amount
+        else:
+            amount = amount + ' ' + commodity
+        line_status = line['posting-status']
+        if line_status:
+            line_status += ' '
+        account = line['account']
+        comment = line['posting-comment']
+        if comment:
+            comment = " ; " + comment
+
+        print(f"    {account:38} {amount:>9}{comment}")
+
+
+def negate(amount):
+    """
+    >>> negate('100.00')
+    '-100.00'
+    >>> negate('-100.00')
+    '100.00'
+    """
+    if amount.startswith('-'):
+        return amount[1:]
+    else:
+        return '-' + amount
+
+
+def validate_transaction(lines):
+    expenses = {}
+    budgets = {}
+    try:
+        for line in lines:
+            account = line['account']
+            amount = line['amount']
+            if account.startswith('(Budget:'):
+                if account[-1] != ')':
+                    yield f"Missing ')' for account '{account}'"
+                    # add the missing paren for ease of use
+                    account += ')'
+                expense_account = 'Expenses:' + account[8:-1]
+                if expense_amount := expenses.get(expense_account):
+                    if negate(expense_amount) != amount:
+                        yield f"Mismatched budget amount for {expense_account}"
+                    del expenses[expense_account]
+                else:
+                    budgets[account[1:-1]] = amount
+            elif account.startswith('Expenses:'):
+                budget_account = 'Budget:' + account[9:]
+                if budget_amount := budgets.get(budget_account):
+                    if negate(budget_amount) != amount:
+                        yield f"Mismatched budget amount for {account}"
+                    del budgets[budget_account]
+                else:
+                    expenses[account] = amount
+    except:
+        print("Error processing transaction")
+        print_transaction(lines)
+        raise
+
+def main():
+    found_errors = False
+    for txnidx, lines in iter_transactions():
+        errs = list(validate_transaction(lines))
+        if not errs:
+            continue
+        found_errors = True
+        print("\nErrors found for transaction!\n")
+        print_transaction(lines)
+        print("\nErrors:")
+        for err in errs:
+            print(" *", err)
+    if found_errors:
+        sys.exit(1)
+    print("All entries passed validation")
+
+
+if __name__ == '__main__':
+    main()

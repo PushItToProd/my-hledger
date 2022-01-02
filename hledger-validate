@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+echo "** Validating journal entries"
+hledger validate-entries
 echo "** Validating all transactions are in order"
 hledger validate-dates
 echo "** Validating budget balance matches net worth"
