@@ -27,21 +27,24 @@ class Line:
         )
 
 
-def run(*cmd, **kwargs):
+def run(*args, **kwargs):
     """
     Wrapper for subprocess.run that sets some default parameters.
     """
     return subprocess.run(
-        cmd,
+        args,
         capture_output=True,
         universal_newlines=True,
         **kwargs
     )
 
 
+def hledger_print(*args, **kwargs):
+    return run("hledger", "print", "-O", "csv", *args, **kwargs)
+
+
 def main():
-    # FIXME: don't include -p lastweek here
-    proc = run("hledger", "print", "-p", "lastweek", "-O", "csv")
+    proc = hledger_print()
     buf = io.StringIO(proc.stdout)
     reader = (Line.from_row(r) for r in csv.DictReader(buf))
 
