@@ -13,7 +13,7 @@ import subprocess
 NON_NUMERIC_CHARS = re.compile('[^0-9.-]')
 
 # TODO Make this a config var.
-SKIP_ACCOUNTS = {"Budget:Savings", "Budget:Buffer"}
+SKIP_ACCOUNTS = {"Budget:Savings", "Budget:Buffer", "Budget:Next Month"}
 
 
 def hledger_decimal(n):
