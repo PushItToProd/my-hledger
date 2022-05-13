@@ -44,31 +44,47 @@ BEGIN {
     AMOUNT = 5
     NAME = 6     # not used but here for documentation purposes
 
-    print "# Citi export as of "
+    TODAY = strftime("%Y-%m-%d %H:%M")
+
+    print "# Citi export as of " TODAY
 }
 
-# loop variables
+# reset and initialize variables for every line
 {
     category = "!!TODO!!"
     account = "Liabilities:Credit:Citi:Costco"
     description = ""
+
+    date = convert_date($DATE)
+
+    switch ($STATUS) {
+        case "Status":
+            next
+            break
+        case "Cleared":
+            status = "*"
+            break
+        default:
+            status = "!"
+            break
+    }
 }
 
 
 ## status
 
 # skip the header line
-$STATUS == "Status" {
-    next
-}
+# $STATUS == "Status" {
+#     next
+# }
 
-$STATUS == "Cleared" {
-    status = "*"
-}
+# $STATUS == "Cleared" {
+#     status = "*"
+# }
 
-$STATUS != "Cleared" {
-    status = "!"
-}
+# $STATUS != "Cleared" {
+#     status = "!"
+# }
 
 ## set up desc and amount
 
@@ -88,32 +104,39 @@ desc ~ /DOORDASH/ {
     gsub(/ 855-973-1040/, "", desc)
     gsub(/ CA$/, "", desc)
 
-    # Started doing this but I think using the raw output is easier
-    # switch (desc) {
-    #     case /sarku/:
-    #         desc = "Sarku Japan"
-    #         break
-    #     case /dairy/:
-    #         desc = "Dairy Queen"
-    #         break
-    #     case /carls/:
-    #         desc = "Carl's Jr"
-    #         break
-    #     case /7-ELEVEN/:
-    #         desc = "7-Eleven"
-    #         break
-    #     case /TACOBELL/:
-    #         desc = "Taco Bell"
-    #         break
-    #     case /PANDA/:
-    #         desc = "Panda Express"
-    #         break
-    #     case /MCDONALDS/:
-    #     case /WOWBAO/:
-    #     case /TERIYAKI MAD/:
-    #     case /QDOBA/:
-    #     case
-    # }
+    # Started doing this but maybe using the raw output would be easier
+    switch (desc) {
+        case /sarku/:
+            desc = "Sarku Japan"
+            break
+        case /dairy/:
+            desc = "Dairy Queen"
+            break
+        case /carls/:
+            desc = "Carl's Jr"
+            break
+        case /7-ELEVEN/:
+            desc = "7-Eleven"
+            break
+        case /TACOBELL/:
+            desc = "Taco Bell"
+            break
+        case /PANDA/:
+            desc = "Panda Express"
+            break
+        case /MCDONALDS/:
+            desc = "McDonalds"
+            break
+        case /WOWBAO/:
+            desc = "Wow Bao"
+            break
+        case /TERIYAKI MAD/:
+            desc = "Teriyaki Madness"
+            break
+        case /QDOBA/:
+            desc = "Qdoba"
+            break
+    }
 
     desc = "Doordash | " desc
 }
@@ -127,8 +150,22 @@ desc ~ /MEYER/ || desc ~ /INSTACART/ {
     category = "Core:Food:Groceries"
 }
 
+desc ~ /APPLE.COM/ && date ~ /-05$/ && amount == "$-4.99" {
+    desc = "Apple Arcade"
+    category = "Fun:Apple Arcade"
+}
+
+desc ~ /IFTTT/ {
+    desc = "IFTTT"
+    category = "Fun:IFTTT"
+}
+
+desc ~ /PLAYSTATIONNETWORK/ && date ~ /-10$/ && amount == "$-4.99" {
+    desc = "Playstation Network | EA Play"
+    category = "Fun:Media:Games"
+}
+
 {
-    date = convert_date($DATE)
     print ""
     print date " " status " " desc
     print "    " account "  " amount
