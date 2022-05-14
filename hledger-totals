@@ -53,8 +53,8 @@ is_balance_line() {
 #   $bal
 print_flag_if_assertions_fail() {
   local asserted_balance
-  asserted_balance="$(get_asserted_balance "$journal_file")"
-  if [[ ! "$asserted_balance" ]]; then
+
+  if ! asserted_balance="$(get_asserted_balance "$journal_file")" || [[ ! "$asserted_balance" ]]; then
     debug "No asserted balance in $journal_file"
     return
   fi
