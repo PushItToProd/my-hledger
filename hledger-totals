@@ -14,7 +14,7 @@ get_account_journal() {
 #   $bal
 #   $acct
 #   $line
-_print_line() {
+print_line() {
   # If it's a negative balance, print it as a formatted balance line with the
   # amount in red.
   if [[ "$bal" == '$-'* ]]; then
@@ -31,12 +31,6 @@ _print_line() {
   printf '%s' "$line"
 }
 
-# _print_line but with a newline at the end.
-print_line() {
-  _print_line
-  echo
-}
-
 # Globals:
 #   $bal
 #   $acct
@@ -48,6 +42,10 @@ is_not_balance_line() {
     || [[ "$bal" == "---"* ]] \
     || [[ ! "$bal" ]] \
     || [[ ! "$acct" ]]
+}
+
+is_balance_line() {
+  ! is_not_balance_line
 }
 
 # Globals:
@@ -88,16 +86,13 @@ print_flags() {
 process_line() {
   local line="$1"
   local bal acct journal_file
+
   read -r bal acct <<<"$line"
 
-  if is_not_balance_line "$bal" "$acct"; then
-    print_line "$bal" "$acct"
-    return
+  print_line "$bal" "$acct"
+  if is_balance_line "$bal" "$acct"; then
+    print_flags
   fi
-
-  _print_line "$bal" "$acct"
-
-  print_flags
   echo
 }
 
