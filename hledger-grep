@@ -5,6 +5,8 @@
 source "$(dirname "${BASH_SOURCE[0]}")/common.sh"
 
 # cd to the journals directory so that grep will list nice relative paths.
+cd "$JOURNALS_DIR" || fatal "couldn't navigate to JOURNALS_DIR $JOURNALS_DIR"
+
 # Note that this requires GNU grep's default behavior for `--recursive` so this
 # will break on macOS or other Unixes.
-cd "$JOURNALS_DIR" && grep --recursive --ignore-case "$@"
+grep --recursive --ignore-case "$@"
