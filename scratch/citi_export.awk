@@ -16,6 +16,9 @@
 #      Liabilities:Credit:Citi:Costco  $-33.29
 #      (Budget:Core:Food:Dining Out)  $-33.29
 #      Expenses:Core:Food:Dining Out
+#
+# Test invocation:
+#    awk -f scratch/citi_export.awk _scratch/citi_monthtodate.txt | less
 
 # convert date from MM/DD/YYYY to YYYY-MM-DD.
 function convert_date(date,
