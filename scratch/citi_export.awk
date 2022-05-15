@@ -60,13 +60,19 @@ BEGIN {
     NAME = 6     # name isn't used but is here for the sake of completeness
 }
 
-# print header
+# print header to separate the generated journal entries from the previous
+# entries in the file
 BEGIN {
     TODAY = strftime("%Y-%m-%d %H:%M")
 
     # print a header to separate the entries from the rest of the journal file
     print ""
     print "# Citi export generated " TODAY
+}
+
+# skip the header line and blank lines
+$STATUS == "Status" || $STATUS == "" {
+    next
 }
 
 # reset and initialize variables for every line
@@ -77,17 +83,10 @@ BEGIN {
 
     date = convert_date($DATE)
 
-    switch ($STATUS) {
-        case "Status":
-            next
-            break
-        case "Cleared":
-            status = "*"
-            break
-        default:
-            status = "!"
-            break
-    }
+    if ($STATUS == "Cleared")
+        status = "*"
+    else
+        status = "!"
 
     desc = $DESC
     amount = convert_amount($AMOUNT)
