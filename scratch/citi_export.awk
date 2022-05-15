@@ -4,6 +4,16 @@
 #   - reverse the file with tac RAWCITIFILE.TXT > CITIFILE.TXT
 #   - update the TXT file as needed to remove already-entered transactions, etc.
 #   - awk -f citi_export.awk CITIFILE.TXT >> ~/Documents/ledger/2021/journals/citi/costco.journal
+#
+# Sample input:
+#   \tStatus\t\tDate\t\t\tDescription\t\t\tAmount\t\tMember Name\t
+#   \tCleared\t\t05/10/2022\t\tDD DOORDASH DAIRYQUEE 855-973-1040 CA\t\t\t$ 33.29\t\tMY NAME\t
+#
+# Sample output:
+#   2022-05-10 * Doordash | Dairy Queen
+#      Liabilities:Credit:Citi:Costco  $-33.29
+#      (Budget:Core:Food:Dining Out)  $-33.29
+#      Expenses:Core:Food:Dining Out
 
 function trim_str(str)
 {
