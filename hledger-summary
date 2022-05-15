@@ -1,9 +1,7 @@
 #!/usr/bin/env bash
-# The incomestatement command shows Revenues vs Expenses to calculate cash net
-# worth (excluding liabilities).
+# Display a summary of my spending for the current year, including this month.
 
 : "${FROM=thisyear}"
 : "${TO=nextmonth}"
-
 
 hledger is --monthly --tree --begin="$FROM" --end="$TO" --average --row-total "$@"

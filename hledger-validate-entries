@@ -1,4 +1,7 @@
 #!/usr/bin/env python3.9
+"""
+Validate that journal entries have
+"""
 import csv
 import io
 import itertools
@@ -29,17 +32,21 @@ def run(cmd, shell=True, **kwargs):
 
 def iter_transactions():
     """
-    Iterate over the transactions from hledger_print(), returning a tuple of
+    Iterate over the transactions from hledger print, returning a tuple of
     each transaction's txnidx and its lines from the CSV.
     """
-    get_key = lambda t: t['txnidx']
+    get_txnidx = lambda t: t['txnidx']
     with run("hledger print -O csv") as proc:
         reader = csv.DictReader(proc.stdout)
-        for txnidx, lines in itertools.groupby(reader, key=get_key):
+        for txnidx, lines in itertools.groupby(reader, key=get_txnidx):
             yield txnidx, list(lines)
 
 
 def print_transaction(lines):
+    """
+    Given an iterable of transaction lines produced by iter_transactions(),
+    print them in hledger journal format.
+    """
     line = lines[0]
     date = line['date']
     status = line['status']
@@ -67,6 +74,8 @@ def print_transaction(lines):
 
 def negate(amount):
     """
+    Negate a numeric string without converting it to a numeric type.
+
     >>> negate('100.00')
     '-100.00'
     >>> negate('-100.00')
@@ -79,17 +88,37 @@ def negate(amount):
 
 
 def validate_transaction(lines):
+    """
+    Given a transaction's lines from iter_transactions(), validate the
+    transaction to ensure braces are matched on virtual account names (ex.
+    detect "(Budget:Foo" instead of "(Budget:Foo)") and that Budget and Expenses
+    lines have equal balances. Any errors encountered are yielded as strings.
+
+    For example, the transaction below would be reported as invalid due to the
+    mismatched amounts for Budget:Groceries and Expenses:Groceries (implied by
+    the amount of Liabilities:Credit).
+
+        2022-01-01 * Grocery Store
+            Liabilities:Credit   $-11.00
+            (Budget:Groceries)   $-10.00
+            Expenses:Groceries
+    """
     expenses = {}
     budgets = {}
+    # TODO: clean up this messy logic
+    # TODO: ensure every Expenses line has a corresponding Budget line
     try:
         for line in lines:
             account = line['account']
             amount = line['amount']
+            # TODO: should probably return an error if any account starts with
+            # "Budget:" since that would be non-virtual
             if account.startswith('(Budget:'):
                 if account[-1] != ')':
                     yield f"Missing ')' for account '{account}'"
                     # add the missing paren for ease of use
                     account += ')'
+                # convert "(Budget:Foo)" to "Expenses:Foo"
                 expense_account = 'Expenses:' + account[8:-1]
                 if expense_amount := expenses.get(expense_account):
                     if negate(expense_amount) != amount:
@@ -98,6 +127,7 @@ def validate_transaction(lines):
                 else:
                     budgets[account[1:-1]] = amount
             elif account.startswith('Expenses:'):
+                # convert "Expenses:Foo" to "(Budget:Foo)"
                 budget_account = 'Budget:' + account[9:]
                 if budget_amount := budgets.get(budget_account):
                     if negate(budget_amount) != amount:
@@ -109,6 +139,7 @@ def validate_transaction(lines):
         print("Error processing transaction")
         print_transaction(lines)
         raise
+
 
 def main():
     found_errors = False
