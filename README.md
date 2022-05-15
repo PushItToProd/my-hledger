@@ -2,6 +2,9 @@
 
 A collection of helper scripts for my hledger setup.
 
+> 🚨 Warning: I update this README far less often than the actual scripts, so
+> this information may be incredibly outdated.
+
 ## A brief overview of my hledger setup
 
 The entrypoint for my hledger journals is a file named `hledger.journal` stored
@@ -34,34 +37,56 @@ My accounts are grouped into the following general structure:
 
 The Assets, Equity, Expenses, Income, and Liabilities accounts are hopefully
 self-explanatory. The Budget account is used for my envelope budgeting system,
-based mostly on [YNAB](https://www.youneedabudget.com/the-four-rules/).
+inspired by [YNAB](https://www.youneedabudget.com/the-four-rules/).
+
+<!-- TODO: illustrate transaction format -->
 
 ## The Scripts
 
 Each script has a prefix of `hledger-`, which allows it to be picked up as an
 hledger subcommand if it's on the path.
 
-* **balances** - Displays main asset and liability account balances with a few
-  small variations by account type. My bank reflects all pending transactions
-  immediately on my checking and savings account balances, but only cleared
-  transactions are reflected on credit accounts, so the flags on each category
-  are configured to reflect this, allowing me to validate my ledger balances
-  against those displayed by my bank.
-* **bills** - Checks if transactions matching queries in a config file have been
+* **hledger-bills** - Checks if transactions matching queries in a config file have been
   made in the current month.
-* **envelopes** - Displays balances of envelope budget accounts.
-* **expenses** - Summarizes monthly expenditures by expense account.
-* **income** - Shows net revenues and expenses by income and expense account by
-  month.
-* **launch** - Launches a web browser with banking sites and a text editor with
-  all journal files open.
-* **loan_balances** - Shows current loan balances.
-* **loan_progress** - Shows loan balances by month.
-* **pockets** - Shows funds in envelopes not marked for specific expenses.
-* **validate_dates** - hledger's check-dates chokes if you have multiple files,
-  so this iterates over all journal files and checks them individually.
-* **validate_envelopes** - Checks whether cash balance and budget balance are
-  equal.
+* **hledger-enter** - Quickly inserts common transactions.
+* **hledger-enter-groceries** - Quickly inserts grocery transactions.
+* **hledger-envelopes** - Displays balances of envelope budget accounts.
+* **hledger-expenses** - Summarizes monthly expenditures by expense account.
+* **hledger-git** - Wrapper that runs git in my ledger directory.
+* **hledger-grep** - Wrapper than runs grep on my journal files.
+* **hledger-income** - Shows net revenues and expenses by income and expense
+  account by month.
+* **hledger-launch** - Launches a web browser with banking sites and a text
+  editor with all journal files open.
+* **hledger-loan-progress** - Shows my student loan balances by month.
+* **hledger-loans** - Shows my current student loan balances.
+* **hledger-man** - Wrapper for viewing hledger help info.
+* **hledger-pending** - Prints pending entries.
+* **hledger-recent** - Prints recent entries.
+* **hledger-summary** - Displays an income statement summarizing my spending for
+  the year so far.
+* **hledger-totals-raw** - Displays main asset and liability account balances in
+  a way that will match my banks' reported balances.
+  * Asset account balances reflect all pending transactions immediately, but
+    liability accounts only reflect the total of cleared transactions, so this
+    script calls `hledger balance` twice with separate flags for each type of
+    account.
+* **hledger-totals** - Wrapper for `hledger-totals-raw` that validates account
+  balances using the logic from `hledger-validate-assertions`.
+* **hledger-true-balances** - Displays account balances with all transaction
+  statuses included so I can see what my balances will actually be once all
+  currently-known transactions have posted and cleared.
+* **hledger-validate-assertions** - Validates account balances against custom
+  assert "directives" I include in each journal file.
+* **hledger-validate-balances** - Validate that my envelope budget balances
+  aren't negative.
+* **hledger-validate-dates** - Wrapper for `hledger check ordereddates` to
+  validate that journal entries are are in order.
+* **hledger-validate-entries** - Validate Budget and Expenses lines on each
+  journal entry.
+* **hledger-validate-envelopes** - Validate that cash balance and budget balance
+  are equal. (This is a shell script that wraps `validate_envelopes.py`.)
+* **hledger-validate** - Wrapper that invokes all the other validation scripts.
 
 Some of the above files have required variables that must be set in
 `helpers_config.sh` (see below). These are declared with the `required_var`
@@ -71,8 +96,6 @@ command in each file as appropriate and will be checked when the command is run.
 
 * **common.sh** - Helper functions for bash scripts.
 * **validate_envelopes.py** - Implementation of validate_envelopes' main logic.
-  `validate_envelopes` itself is a bash script that passes the appropriate
-  config options to `validate_envelopes.py`.
 
 ## Configuration paths
 
