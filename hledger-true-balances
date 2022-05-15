@@ -2,7 +2,7 @@
 # True hledger account balances, irrespective of transaction state.
 
 # shellcheck source=common.sh
-source "$(dirname "$0")/common.sh"
+source "$(dirname "${BASH_SOURCE[0]}")/common.sh"
 
 required_var REGULAR_ASSET_ACCOUNTS
 

@@ -4,7 +4,7 @@
 # split into separate files by account.
 
 # shellcheck source=common.sh
-source "$(dirname "$0")/common.sh"
+source "$(dirname "${BASH_SOURCE[0]}")/common.sh"
 
 if hledger check ordereddates; then
   echo "No out-of-order transactions."
