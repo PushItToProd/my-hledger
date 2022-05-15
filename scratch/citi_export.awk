@@ -52,7 +52,7 @@ BEGIN {
 
     # print a header to separate the entries from the rest of the journal file
     print ""
-    print "# Citi export as of " TODAY
+    print "# Citi export generated " TODAY
 }
 
 # reset and initialize variables for every line
