@@ -41,13 +41,17 @@ BEGIN {
     FS = "\t+"
     IGNORECASE = 1
 
-    # 1 is empty due to a leading tab
+    # field names
+    # field 1 is empty due to a leading tab, so we omit it
     STATUS = 2
     DATE = 3
     DESC = 4
     AMOUNT = 5
     NAME = 6     # not used but here for documentation purposes
+}
 
+# print header
+BEGIN {
     TODAY = strftime("%Y-%m-%d %H:%M")
 
     # print a header to separate the entries from the rest of the journal file
