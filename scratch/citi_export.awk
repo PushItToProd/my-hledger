@@ -47,7 +47,7 @@ BEGIN {
     TODAY = strftime("%Y-%m-%d %H:%M")
 
     # print a header to separate the entries from the rest of the journal file
-    print
+    print ""
     print "# Citi export as of " TODAY
 }
 
