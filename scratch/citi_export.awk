@@ -15,12 +15,6 @@
 #      (Budget:Core:Food:Dining Out)  $-33.29
 #      Expenses:Core:Food:Dining Out
 
-function trim_str(str)
-{
-    gsub(/(^[[:space:]]+|[[:space:]]+$)/, "", str)
-    return str
-}
-
 function convert_date(date,
     # function locals
     _year, _month, _day)
