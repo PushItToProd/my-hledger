@@ -26,13 +26,13 @@ function convert_date(date,
     return _year "-" _month "-" _day
 }
 
-function convert_amount(amount)
+function convert_amount(amount, _aparts)
 {
-    split(amount, aparts, " ")
-    if (aparts[1] == "$")
-        amount = "$-" aparts[2]
+    split(amount, _aparts, " ")
+    if (_aparts[1] == "$")
+        amount = "$-" _aparts[2]
     else
-        amount = "$" aparts[2]
+        amount = "$" _aparts[2]
     return amount
 }
 
