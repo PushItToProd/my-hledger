@@ -1,4 +1,6 @@
 #!/usr/bin/env awk
+# GNU Awk script for translating Citi TXT exports to hledger journal entries.
+#
 # Usage:
 #   - export transactions from Citi as a TXT file
 #   - reverse the file with tac RAWCITIFILE.TXT > CITIFILE.TXT
@@ -15,6 +17,7 @@
 #      (Budget:Core:Food:Dining Out)  $-33.29
 #      Expenses:Core:Food:Dining Out
 
+# convert date from MM/DD/YYYY to YYYY-MM-DD.
 function convert_date(date,
     # function locals
     _year, _month, _day)
@@ -26,6 +29,10 @@ function convert_date(date,
     return _year "-" _month "-" _day
 }
 
+# convert citi's amount representation to hledger's.
+#
+# citi represents debits as "$ 1.23" and credits as "-$ 1.23", while in hledger
+# these translate to "$-1.23" and "$1.23"
 function convert_amount(amount, _aparts)
 {
     split(amount, _aparts, " ")
@@ -47,7 +54,7 @@ BEGIN {
     DATE = 3
     DESC = 4
     AMOUNT = 5
-    NAME = 6     # not used but here for documentation purposes
+    NAME = 6     # name isn't used but is here for the sake of completeness
 }
 
 # print header
@@ -154,6 +161,7 @@ desc ~ /PLAYSTATIONNETWORK/ && date ~ /-10$/ && amount == "$-4.99" {
     category = "Fun:Media:Games"
 }
 
+# print the hledger journal entry
 {
     print ""
     print date " " status " " desc
