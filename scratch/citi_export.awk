@@ -39,10 +39,11 @@ function convert_date(date,
 function convert_amount(amount, _aparts)
 {
     split(amount, _aparts, " ")
-    if (_aparts[1] == "$")
+    if (_aparts[1] == "$") {
         amount = "$-" _aparts[2]
-    else
+    } else {
         amount = "$" _aparts[2]
+    }
     return amount
 }
 
@@ -83,10 +84,11 @@ $STATUS == "Status" || $STATUS == "" {
 
     date = convert_date($DATE)
 
-    if ($STATUS == "Cleared")
+    if ($STATUS == "Cleared") {
         status = "*"
-    else
+    } else {
         status = "!"
+    }
 
     desc = $DESC
     amount = convert_amount($AMOUNT)
