@@ -165,11 +165,22 @@ desc ~ /PLAYSTATIONNETWORK/ && date ~ /-10$/ && amount == "$-4.99" {
     category = "Fun:Media:Games"
 }
 
+# print journal line with proper padding and indentation
+function print_line(account, amount, linelen) {
+    if (!amount) {
+        print "    " account
+        return
+    }
+    if (!linelen) linelen = 48
+    linelen = linelen - length(account) - 2
+    printf("    %s  %" linelen "s\n", account, amount)
+}
+
 # print the hledger journal entry
 {
     print ""
     print date " " status " " desc
-    print "    " account "  " amount
-    print "    (Budget:" category ")  " amount
-    print "    Expenses:" category
+    print_line(account, amount)
+    print_line("(Budget:" category ")", amount)
+    print_line("Expenses:" category)
 }
