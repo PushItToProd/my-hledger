@@ -14,6 +14,8 @@ set -euo pipefail
 : "${CONFIG_FILE:="$LEDGER_DIR/helpers_config.sh"}"
 # PROGNAME is the name of the running script.
 : "${PROGNAME:="$(basename "$0")"}"
+# PROGDIR is the path to this directory.
+: "${PROGDIR:="$(dirname "${BASH_SOURCE[0]}")"}"
 
 # An environment variable setting the debug state
 : "${MY_HLEDGER_DEBUG:=}"

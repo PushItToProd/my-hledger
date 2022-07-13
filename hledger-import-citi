@@ -1,0 +1,54 @@
+#!/usr/bin/env bash
+# Import citi transaction files
+
+
+# shellcheck source=common.sh
+source "$(dirname "${BASH_SOURCE[0]}")/common.sh"
+
+: "${IMPORTS_DIR:="$LEDGER_DIR/imports"}"
+: "${CITI_JOURNAL:="$JOURNALS_DIR/citi/costco.journal"}"
+
+prompt_for_import_file() {
+  echo "Multiple import candidates found. Please select one"
+}
+
+hledger-import-citi::main() {
+  local f import_file
+  local -a import_candidates
+
+  shopt -s nocaseglob  # enable case insensitive globbing
+
+  import_candidates=("$IMPORTS_DIR/"*citi*.txt)
+  case ${#import_candidates[@]} in
+    0) fatal "failed to find file for import in $IMPORTS_DIR" ;;
+    1) import_file="${import_candidates[0]}" ;;
+    *)
+      echo "Multiple importable files found. Which one should we use?" >&2
+      select f in "${import_candidates[@]}"; do
+        import_file="$f"
+        break
+      done
+      ;;
+  esac
+  info "Importing $import_file"
+
+  if [[ ! -f "$import_file" ]]; then
+    fatal "file does not exist: $import_file"
+  fi
+
+  if ! head -n1 "$import_file" | grep -q $'Status\t\tDate'; then
+    fatal "invalid file format: expected first line of $import_file to" \
+      "contain 'Status\t\tDate'"
+  fi
+
+  local tmp_file="$import_file.tmp.journal"
+  tac "$import_file" | awk -f "$PROGDIR/scratch/citi_export.awk" > "$tmp_file" \
+    || fatal "generating journal entries failed"
+  cat "$tmp_file" >> "$CITI_JOURNAL" || fatal "appending to $CITI_JOURNAL failed"
+  info "imported transactions to $CITI_JOURNAL"
+  rm "$tmp_file" || fatal "failed to delete temp file $tmp_file"
+}
+
+if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
+  hledger-import-citi::main "$@"
+fi
