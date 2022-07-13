@@ -141,6 +141,11 @@ desc ~ /DOORDASH/ {
     desc = "Doordash | " desc
 }
 
+desc ~ /UBER EATS/ {
+    category = "Core:Food:Dining Out"
+    desc = "Uber Eats"
+}
+
 desc ~ /INSTANT INK/ {
     desc = "Instant Ink"
     category = "Core:Instant Ink"
