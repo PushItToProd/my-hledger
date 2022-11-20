@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 # Import citi transaction files
 
-
 # shellcheck source=common.sh
 source "$(dirname "${BASH_SOURCE[0]}")/common.sh"
 
@@ -42,11 +41,13 @@ hledger-import-citi::main() {
   fi
 
   local tmp_file="$import_file.tmp.journal"
-  tac "$import_file" | awk -f "$PROGDIR/scratch/citi_export.awk" > "$tmp_file" \
+  tac "$import_file" | awk -f "$PROGDIR/import-citi/process_citi_tsv.awk" > "$tmp_file" \
     || fatal "generating journal entries failed"
   cat "$tmp_file" >> "$CITI_JOURNAL" || fatal "appending to $CITI_JOURNAL failed"
   info "imported transactions to $CITI_JOURNAL"
   rm "$tmp_file" || fatal "failed to delete temp file $tmp_file"
+
+  # TODO: offer to delete original import file?
 }
 
 if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
