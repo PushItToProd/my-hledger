@@ -76,6 +76,8 @@ $STATUS == "Status" || $STATUS == "" {
     next
 }
 
+# TODO maybe allow comment lines starting with '#'
+
 # reset and initialize variables for every line
 {
     category = "!!TODO!!"
@@ -101,12 +103,16 @@ $STATUS == "Status" || $STATUS == "" {
 desc ~ /DOORDASH/ {
     category = "Core:Food:Dining Out"
 
+    # try to strip out any line noise from the description to get only the name
+    # of the restaurant
+    # (XXX perhaps this should go in a default case under the switch statement
+    # below since it's only needed if we don't get a definite match)
     gsub(/(DD )?DOORDASH([*] )? /, "", desc)
     gsub(/ WWW.DOORDASH.CA/, "", desc)
     gsub(/ 855-973-1040/, "", desc)
     gsub(/ CA$/, "", desc)
 
-    # Started doing this but maybe using the raw output would be easier
+    # Started doing this, but maybe using the raw output would be easier
     switch (desc) {
         case /sarku/:
             desc = "Sarku Japan"
@@ -162,6 +168,11 @@ desc ~ /APPLE.COM/ && date ~ /-05$/ && amount == "$-4.99" {
     category = "Fun:Apple Arcade"
 }
 
+desc ~ /APPLE.COM/ && date ~ /-17$/ && amount == "$-0.99" {
+    desc = "Apple | iCloud"
+    category = "Core:iCloud"
+}
+
 desc ~ /IFTTT/ {
     desc = "IFTTT"
     category = "Fun:IFTTT"
@@ -170,6 +181,26 @@ desc ~ /IFTTT/ {
 desc ~ /PLAYSTATIONNETWORK/ && date ~ /-10$/ && amount == "$-4.99" {
     desc = "Playstation Network | EA Play"
     category = "Fun:Media:Games"
+}
+
+desc ~ /GOOGLE.*Colab/ {
+    desc = "Google Colab"
+    category = "Fun:Google Colab"
+}
+
+desc ~ /COHOST.ORG/ {
+    desc = "Cohost"
+    category = "Fun:Cohost"
+}
+
+desc ~ /FACTOR75/ {
+    desc = "Factor 75"
+    category = "Core:Food:Factor 75"
+}
+
+desc ~ /TIDAL/ {
+    desc = "Tidal"
+    category = "Fun:Tidal"
 }
 
 # print journal line with proper padding and indentation
