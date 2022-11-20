@@ -113,6 +113,8 @@ def validate_transaction(lines):
             amount = line['amount']
             if account.startswith('Budget:'):
                 yield f"Non-virtual line for budget account '{account}' (amount: {amount})"
+            if "TODO" in account:
+                yield f"TODO account '{account}' needs to be replaced with a real account"
             if account.startswith('(Budget:'):
                 if account[-1] != ')':
                     yield f"Missing ')' for account '{account}'"
