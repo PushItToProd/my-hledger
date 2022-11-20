@@ -203,6 +203,11 @@ desc ~ /TIDAL/ {
     category = "Fun:Tidal"
 }
 
+desc ~ /NOTION/ {
+    desc = "Notion"
+    category = "Core:Notion"
+}
+
 # print journal line with proper padding and indentation
 function print_line(account, amount, linelen) {
     if (!amount) {
