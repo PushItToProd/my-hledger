@@ -96,6 +96,8 @@ $STATUS == "Status" || $STATUS == "" {
 
 ## handle common transactions
 
+@include "/home/joe/Code/projects/my-hledger/import-citi/citi_export_rules.nocommit.awk"
+
 desc ~ /DOORDASH/ {
     category = "Core:Food:Dining Out"
 
