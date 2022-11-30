@@ -1,13 +1,22 @@
 #!/usr/bin/env bash
-set -euo pipefail
 
-echo "** Validating journal entries"
-hledger validate-entries
-echo "** Validating all transactions are in order"
-hledger validate-dates
-echo "** Validating budget balance matches net worth"
-hledger validate-envelopes
-echo "** Validating everything is budgeted"
-hledger validate-balances
-echo "** Validating balance assertions"
-hledger validate-assertions
+# shellcheck source=common.sh
+source "$(dirname "${BASH_SOURCE[0]}")/common.sh"
+
+fail=
+
+info "Validating journal entries"
+hledger validate-entries || fail=1
+info "Validating all transactions are in order"
+hledger validate-dates || fail=1
+info "Validating budget balance matches net worth"
+hledger validate-envelopes || fail=1
+info "Validating everything is budgeted"
+hledger validate-balances || fail=1
+info "Validating balance assertions"
+hledger validate-assertions || fail=1
+
+if [[ "$fail" ]]; then
+  fatal "One or more validation checks failed!"
+  exit 1
+fi
