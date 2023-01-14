@@ -114,7 +114,8 @@ def validate_transaction(lines):
         amount = line['amount']
 
         if account.startswith('(') ^ account.endswith(')'):
-            yield f"Missing parenthesis for account '{account}' (amount: {amount})"
+            yield f"Missing parenthesis for account '{account}' " \
+                  f"(amount: {amount})"
             # now rectify the missing parens so the validation logic will work
             # below
             if account.startswith('('):
@@ -123,19 +124,23 @@ def validate_transaction(lines):
                 account = "(" + account
 
         if account.startswith('Budget:'):
-            yield f"Non-virtual line for budget account '{account}' (amount: {amount})"
+            yield f"Non-virtual line for budget account '{account}' " \
+                  f"(amount: {amount})"
             # again rectify missing parens so we can do more validation below
             account = f"({account})"
 
         if "TODO" in account:
-            yield f"TODO account '{account}' needs to be replaced with a real account"
+            yield f"TODO account '{account}' needs to be replaced with a " \
+                  f"real account"
 
         if account.startswith('(Budget:'):
             # convert "(Budget:Foo)" to "Expenses:Foo"
             expense_account = 'Expenses:' + account[8:-1]
             if expense_amount := expenses.get(expense_account):
                 if negate(expense_amount) != amount:
-                    yield f"Budgeted amount for {account} ({amount}) doesn't match expense amount for {expense_account} ({expense_amount})"
+                    yield f"Budgeted amount for {account} ({amount}) doesn't " \
+                          f"match expense amount for {expense_account} " \
+                          f"({expense_amount})"
                 del expenses[expense_account]
             else:
                 budgets[account[1:-1]] = amount
@@ -146,7 +151,9 @@ def validate_transaction(lines):
             budget_account = 'Budget:' + account[9:]
             if budget_amount := budgets.get(budget_account):
                 if negate(budget_amount) != amount:
-                    yield f"Budgeted amount for {budget_account} ({budget_amount}) doesn't match expense amount for {account} ({amount})"
+                    yield f"Budgeted amount for {budget_account} " \
+                          f"({budget_amount}) doesn't match expense amount " \
+                          f"for {account} ({amount})"
                 del budgets[budget_account]
             else:
                 expenses[account] = amount
