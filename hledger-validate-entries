@@ -112,15 +112,22 @@ def validate_transaction(lines):
     for line in lines:
         account = line['account']
         amount = line['amount']
+
+        if account.startswith('(') ^ account.endswith(')'):
+            yield f"Missing parenthesis for account '{account}' (amount: {amount})"
+            # now rectify the missing parens
+            if account.startswith('('):
+                account += ")"
+            else:
+                account = "(" + account
+
         if account.startswith('Budget:'):
             yield f"Non-virtual line for budget account '{account}' (amount: {amount})"
+
         if "TODO" in account:
             yield f"TODO account '{account}' needs to be replaced with a real account"
+
         if account.startswith('(Budget:'):
-            if account[-1] != ')':
-                yield f"Missing ')' for account '{account}'"
-                # add the missing paren for ease of use
-                account += ')'
             # convert "(Budget:Foo)" to "Expenses:Foo"
             expense_account = 'Expenses:' + account[8:-1]
             if expense_amount := expenses.get(expense_account):
