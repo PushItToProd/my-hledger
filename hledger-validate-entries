@@ -115,7 +115,8 @@ def validate_transaction(lines):
 
         if account.startswith('(') ^ account.endswith(')'):
             yield f"Missing parenthesis for account '{account}' (amount: {amount})"
-            # now rectify the missing parens
+            # now rectify the missing parens so the validation logic will work
+            # below
             if account.startswith('('):
                 account += ")"
             else:
@@ -123,6 +124,8 @@ def validate_transaction(lines):
 
         if account.startswith('Budget:'):
             yield f"Non-virtual line for budget account '{account}' (amount: {amount})"
+            # again rectify missing parens so we can do more validation below
+            account = f"({account})"
 
         if "TODO" in account:
             yield f"TODO account '{account}' needs to be replaced with a real account"
