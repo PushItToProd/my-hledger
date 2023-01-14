@@ -109,46 +109,47 @@ def validate_transaction(lines):
     budgets = {}
     # TODO: clean up this messy logic
     # TODO: ensure every Expenses line has a corresponding Budget line
-    try:
-        for line in lines:
-            account = line['account']
-            amount = line['amount']
-            if account.startswith('Budget:'):
-                yield f"Non-virtual line for budget account '{account}' (amount: {amount})"
-            if "TODO" in account:
-                yield f"TODO account '{account}' needs to be replaced with a real account"
-            if account.startswith('(Budget:'):
-                if account[-1] != ')':
-                    yield f"Missing ')' for account '{account}'"
-                    # add the missing paren for ease of use
-                    account += ')'
-                # convert "(Budget:Foo)" to "Expenses:Foo"
-                expense_account = 'Expenses:' + account[8:-1]
-                if expense_amount := expenses.get(expense_account):
-                    if negate(expense_amount) != amount:
-                        yield f"Mismatched budget amount for {expense_account}"
-                    del expenses[expense_account]
-                else:
-                    budgets[account[1:-1]] = amount
-            elif account.startswith('Expenses:'):
-                # convert "Expenses:Foo" to "(Budget:Foo)"
-                budget_account = 'Budget:' + account[9:]
-                if budget_amount := budgets.get(budget_account):
-                    if negate(budget_amount) != amount:
-                        yield f"Mismatched budget amount for {account}"
-                    del budgets[budget_account]
-                else:
-                    expenses[account] = amount
-    except:
-        print("Error processing transaction")
-        print_transaction(lines)
-        raise
+    for line in lines:
+        account = line['account']
+        amount = line['amount']
+        if account.startswith('Budget:'):
+            yield f"Non-virtual line for budget account '{account}' (amount: {amount})"
+        if "TODO" in account:
+            yield f"TODO account '{account}' needs to be replaced with a real account"
+        if account.startswith('(Budget:'):
+            if account[-1] != ')':
+                yield f"Missing ')' for account '{account}'"
+                # add the missing paren for ease of use
+                account += ')'
+            # convert "(Budget:Foo)" to "Expenses:Foo"
+            expense_account = 'Expenses:' + account[8:-1]
+            if expense_amount := expenses.get(expense_account):
+                if negate(expense_amount) != amount:
+                    yield f"Mismatched budget amount for {expense_account}"
+                del expenses[expense_account]
+            else:
+                budgets[account[1:-1]] = amount
+        elif account.startswith('Expenses:'):
+            # convert "Expenses:Foo" to "(Budget:Foo)"
+            budget_account = 'Budget:' + account[9:]
+            if budget_amount := budgets.get(budget_account):
+                if negate(budget_amount) != amount:
+                    yield f"Mismatched budget amount for {account}"
+                del budgets[budget_account]
+            else:
+                expenses[account] = amount
 
 
 def main():
     found_errors = False
     for txnidx, lines in iter_transactions():
-        errs = list(validate_transaction(lines))
+        try:
+            errs = list(validate_transaction(lines))
+        except Exception as exc:
+            print("Error processing transaction:", exc)
+            print_transaction(lines)
+            raise
+
         if not errs:
             continue
         found_errors = True
