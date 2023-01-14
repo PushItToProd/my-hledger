@@ -132,16 +132,18 @@ def validate_transaction(lines):
             expense_account = 'Expenses:' + account[8:-1]
             if expense_amount := expenses.get(expense_account):
                 if negate(expense_amount) != amount:
-                    yield f"Mismatched budget amount for {expense_account}"
+                    yield f"Budgeted amount for {account} ({amount}) doesn't match expense amount for {expense_account} ({expense_amount})"
                 del expenses[expense_account]
             else:
                 budgets[account[1:-1]] = amount
-        elif account.startswith('Expenses:'):
+            continue
+
+        if account.startswith('Expenses:'):
             # convert "Expenses:Foo" to "(Budget:Foo)"
             budget_account = 'Budget:' + account[9:]
             if budget_amount := budgets.get(budget_account):
                 if negate(budget_amount) != amount:
-                    yield f"Mismatched budget amount for {account}"
+                    yield f"Budgeted amount for {budget_account} ({budget_amount}) doesn't match expense amount for {account} ({amount})"
                 del budgets[budget_account]
             else:
                 expenses[account] = amount
