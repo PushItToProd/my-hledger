@@ -89,6 +89,18 @@ def negate(amount):
         return '-' + amount
 
 
+def is_refund(line):
+    description = line['description'].lower()
+    comment = line['comment'].lower()
+    posting_comment = line['posting-comment']
+
+    return any(
+        text in field
+        for text in ("refund", "reimbursement")
+        for field in (description, comment, posting_comment)
+    )
+
+
 def validate_transaction(lines):
     """
     Given a transaction's lines from iter_transactions(), validate the
@@ -157,6 +169,11 @@ def validate_transaction(lines):
                 del budgets[budget_account]
             else:
                 expenses[account] = amount
+
+            if amount.startswith('-') and not is_refund(line):
+                yield f"Negative expense amount for {account}: {amount} - " \
+                      f"Please add 'refund' to the comment or description if " \
+                      f"this is correct."
 
 
 def main():
