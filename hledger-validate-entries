@@ -1,6 +1,8 @@
 #!/usr/bin/env python3.9
 """
-Validate that journal entries have
+Validate journal entries to ensure that braces are matched on virtual account
+names (ex. detect "(Budget:Foo" instead of "(Budget:Foo)") and that Budget and
+Expenses lines have equal balances.
 """
 import csv
 import io
