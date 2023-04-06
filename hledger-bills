@@ -48,7 +48,7 @@ def green(s):
 
 def red(s):
     """
-    Wrap a string in ANSI terminal escape codes to make it green.
+    Wrap a string in ANSI terminal escape codes to make it red.
     """
     return f"\u001b[31m{s}\u001b[0m"
 
