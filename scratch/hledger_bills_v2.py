@@ -4,9 +4,14 @@
 # pure Python against the output of `hledger print` rather than having to run
 # hledger repeatedly for each given bill query.
 
+from contextlib import contextmanager
 from datetime import date
+from subprocess import PIPE, Popen, TimeoutExpired
 import argparse
+import collections.abc
 import csv
+import importlib.util
+import itertools
 import json
 import os
 import subprocess
@@ -105,21 +110,36 @@ def read_file(file_name):
         return f.read()
 
 
+def import_module_from_string(name: str, source: str):
+    """
+    via Stackoverflow: https://stackoverflow.com/a/53080237/6417784
+    """
+    # XXX: given that we're reading from a file anyway, perhaps we should import
+    # the file itself directly - see: https://stackoverflow.com/a/67692/6417784
+    spec = importlib.util.spec_from_loader(name, loader=None)
+    module = importlib.util.module_from_spec(spec)
+    exec(source, module.__dict__)
+    return module
+
+
 def load_bill_rules(rules: str):
     """
     Load a set of rules defined as Python functions from the given string.
     """
-    exec_locals = {}
-    exec(rules, {}, exec_locals)
+    rules_module = import_module_from_string("bills", rules)
 
     # look for a variable named 'bills'
-    bills = exec_locals.get('bills')
-    if bills is None:
+    if not hasattr(rules_module, 'bills'):
         raise Exception(
-            f"The bill file {bill_file} must contain a variable named "
-            f"'bills', but it does not."
+            f"Couldn't find a variable named 'bills' in the bill file "
+            f"({bill_file})"
         )
-    return bills
+    if not isinstance(rules_module.bills, collections.abc.Mapping):
+        raise Exception(
+            f"The variable 'bills' in the bill file ({bill_file}) must be a "
+            f"dict or other mapping type. Got {type(bills)} instead."
+        )
+    return rules_module.bills
 
 
 def iter_transactions_csv(period):
@@ -146,11 +166,17 @@ def main():
     print(f"Bills for period {period}")
 
     for txnidx, postings in iter_transactions_csv(period):
-        for name, rule in rules:
+        for name, rule in rules.items():
             if rule_results[name]:
                 continue
             if rule(postings):
                 rule_results[name] = True
+
+    for rule, matched in rule_results.items():
+        if matched:
+            print(green(f"{rule} paid"))
+        else:
+            print(red(f"{rule} not paid!"))
 
 
 if __name__ == '__main__':
