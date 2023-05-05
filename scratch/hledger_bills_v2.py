@@ -1,4 +1,24 @@
 #!/usr/bin/env python3.11
+"""
+Utility for checking whether bills have been paid. Create a file named bills.py
+in the same directory as your $LEDGER_FILE or set the BILL_FILE or BILL_FILE_V2
+environment variable.
+
+The bills file must contain a variable named 'bills' containing a dict where
+each key is a string and each value is a function that takes the list of
+postings for a transaction and returns True or False to indicate if the
+transaction matches.
+
+For example:
+
+    def match_account(account, postings):
+        return any(p['account'] == account for p in postings)
+
+    bills = {
+        "Rent": lambda ps: match_account("Expenses:Core:Rent", ps),
+        "Electricity": lambda ps: match_account("Expenses:Core:Electricity", ps),
+    }
+"""
 
 # This is an optimized version of hledger-bills that will perform all checks in
 # pure Python against the output of `hledger print` rather than having to run
@@ -112,6 +132,13 @@ def read_file(file_name):
 
 def import_module_from_string(name: str, source: str):
     """
+    Given the name of a module and its source code, import it and return the
+    imported module.
+
+    >>> m = import_module_from_string("m", "x = 1")
+    >>> m.x
+    1
+
     via Stackoverflow: https://stackoverflow.com/a/53080237/6417784
     """
     # XXX: given that we're reading from a file anyway, perhaps we should import
